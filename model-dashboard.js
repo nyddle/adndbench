@@ -14,6 +14,7 @@
   const started = e => e.status !== 'pending' && (e.status !== 'ready' || (e.result && e.result.turns > 0));
   const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const num = v => v === null || v === undefined ? '—' : esc(v);
+  const decimal = v => typeof v === 'number' && Number.isFinite(v) ? new Intl.NumberFormat('ru-RU', {maximumFractionDigits:2}).format(v) : '—';
   const scenarios = data.scenarios;
   const scenarioLabel = s => `${s.label || s.axis} · ${s.level || ''}`;
   const metric = (label, value) => `<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
@@ -40,7 +41,15 @@
     if (r.healing != null) metrics.push(metric('Исцеление',num(r.healing)));
     if (r.charges_used != null) metrics.push(metric('Потрачено зарядов',num(r.charges_used)));
     if (r.hero_hp != null) metrics.push(metric('Здоровье героя',num(r.hero_hp)));
-    if (e.score != null && e.status === 'completed') metrics.push(metric('Балл',`${num(e.score)} / 100`));
+    if (e.score != null && e.status === 'completed') {
+      metrics.push(metric('Балл',`${decimal(e.score)} / 100`));
+      if (e.score_version === 'radical-efficiency-score-0.2.0' && e.score_breakdown) {
+        const progress = e.score_breakdown.progress || {};
+        const efficiency = e.score_breakdown.efficiency || {};
+        metrics.push(metric('Прогресс',`${decimal(progress.earned)} / ${decimal(progress.weight)}`));
+        metrics.push(metric('Эффективность',`${decimal(efficiency.earned)} / ${decimal(efficiency.weight)}`));
+      }
+    }
     const info = e.status !== 'completed' ? ' partial' : (r.terminal_reason === 'completed' ? '' : ' failed');
     return `<article class="model-episode${info}"><div class="episode-top"><span>${s.fixed_case ? 'Фиксированный случай' : `Мир ${num(e.world)}`}</span><strong>${esc(outcome)}</strong></div><dl>${metrics.join('')}</dl></article>`;
   }
@@ -54,7 +63,11 @@
     const splitLabel = s.split === 'holdout' ? 'отложенная проверка' : 'исследовательский набор';
     let notes = `${splitLabel} · ${s.fixed_case ? 'фиксированный случай' : `миров начато ${worlds} / запланировано ${plannedWorlds}`} · Codex · effort ${s.effort || '—'} · лимит ${s.max_actions || '—'} действий`;
     if (data.updated_at) notes += ` · снимок ${data.updated_at}`;
-    if (s.axis === 'radical-adventure') notes += ' · баллы только за завершённые партии';
+    if (s.axis === 'radical-adventure') {
+      notes += ' · баллы только за завершённые партии';
+      if (s.game_config && s.game_config.max_turns) notes += ` · игровой лимит ${s.game_config.max_turns} ходов`;
+      if (s.episodes.some(e => e.score_version === 'radical-efficiency-score-0.2.0')) notes += ' · шкала v0.2';
+    }
     if (s.measurement === 'party_choice_feasible_by_oracle') notes += ' · успех выбора = существование победной стратегии, а не сыгранный бой';
     if (s.axis === 'memory-compact') notes += ' · история доступна в контексте';
     context.textContent = notes;
