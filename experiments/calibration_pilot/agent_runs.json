@@ -1,0 +1,239 @@
+{
+  "max_turns": 600,
+  "runs": [
+    {
+      "id": "astroeasy",
+      "model": "gpt-6.2-astra",
+      "seed": 101,
+      "profile": "easy",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "easy",
+        "npc_difficulty": "easy",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "astrohard",
+      "model": "gpt-6.2-astra",
+      "seed": 101,
+      "profile": "hard",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "hard",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "lunasixeasy",
+      "model": "gpt-6-luna",
+      "seed": 101,
+      "profile": "easy",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "easy",
+        "npc_difficulty": "easy",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "agent_stopped",
+      "operator_interventions": []
+    },
+    {
+      "id": "lunasixhard",
+      "model": "gpt-6-luna",
+      "seed": 101,
+      "profile": "hard",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "hard",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "luna56easy",
+      "model": "gpt-5.6-luna",
+      "seed": 101,
+      "profile": "easy",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "easy",
+        "npc_difficulty": "easy",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "luna56hard",
+      "model": "gpt-5.6-luna",
+      "seed": 101,
+      "profile": "hard",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "hard",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "agent_stopped",
+      "operator_interventions": []
+    },
+    {
+      "id": "astrohardtwo",
+      "model": "gpt-6.2-astra",
+      "seed": 102,
+      "profile": "hard",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "hard",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "lunasixhardtwo",
+      "model": "gpt-6-luna",
+      "seed": 102,
+      "profile": "hard",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "hard",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "agent_stopped",
+      "operator_interventions": []
+    },
+    {
+      "id": "luna56hardtwo",
+      "model": "gpt-5.6-luna",
+      "seed": 102,
+      "profile": "hard",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "hard",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": null
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "luna56combat",
+      "model": "gpt-5.6-luna",
+      "seed": 101,
+      "profile": "combat_hard_only",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "easy",
+        "character_class": "generalist",
+        "enemy_count": 2
+      },
+      "agent_outcome": "agent_stopped",
+      "operator_interventions": []
+    },
+    {
+      "id": "astronpc",
+      "model": "gpt-6.2-astra",
+      "seed": 101,
+      "profile": "npc_hard_only",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "easy",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": 2
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "astrocombat",
+      "model": "gpt-6.2-astra",
+      "seed": 101,
+      "profile": "combat_hard_only",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "hard",
+        "npc_difficulty": "easy",
+        "character_class": "generalist",
+        "enemy_count": 2
+      },
+      "agent_outcome": "game_terminal",
+      "operator_interventions": []
+    },
+    {
+      "id": "luna56npc",
+      "model": "gpt-5.6-luna",
+      "seed": 101,
+      "profile": "npc_hard_only",
+      "config": {
+        "map_size": 6,
+        "map_topology": "mixed",
+        "terrain_diversity": 2,
+        "quest_difficulty": "easy",
+        "combat_difficulty": "easy",
+        "npc_difficulty": "hard",
+        "character_class": "generalist",
+        "enemy_count": 2
+      },
+      "agent_outcome": "agent_stopped",
+      "operator_interventions": []
+    }
+  ]
+}
