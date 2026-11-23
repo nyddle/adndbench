@@ -2,3 +2,25 @@
 /* Tables in the dark research sections use a lighter header than the parchment table. */
 .memory-detail thead th,.early thead th{color:#d4bb94}
 .scroll-hint{display:none;color:#756149;font-size:.74rem;margin:0 0 8px}.table-wrap:focus-visible{outline:3px solid #936b38;outline-offset:2px}@media(max-width:560px){.scroll-hint{display:block}}
+
+/* Adventure journal: one scenario at a time, with each model's actual episodes. */
+.model-section{padding-block:105px 20px;scroll-margin-top:20px}
+.model-panel{margin-top:44px;padding:28px;border:1px solid #806c4c;background:linear-gradient(135deg,#2b2725,#211f1e);box-shadow:inset 0 0 0 4px #292420,inset 0 0 0 5px #54442f,0 18px 45px #0004}
+.model-controls{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:16px}
+.model-controls label{display:flex;flex-direction:column;gap:7px;color:#d3b88e;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.model-controls select{width:100%;min-height:45px;padding:10px 13px;border:1px solid #836a48;border-radius:2px;background:#3d322b;color:#f4e7cf;font:600 .88rem/1.3 system-ui;cursor:pointer}
+.model-controls select:focus-visible{outline:3px solid #e5b968;outline-offset:3px}
+.model-context{font-size:.78rem;color:#c4ac86;border-block:1px solid #5f4d39;padding:14px 0;margin:23px 0}
+.model-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.model-card{min-width:0;background:#efe3ca;color:#30281e;border:1px solid #bca174;padding:18px 16px;box-shadow:inset 0 0 0 3px #efe3ca,inset 0 0 0 4px #cbb18a}
+.model-card-head{border-bottom:1px solid #c6ad85;padding-bottom:12px}
+.model-card-head h3{font:700 1.05rem/1.25 Georgia,serif;margin:0;color:#493428}
+.model-card-head span{display:block;margin-top:7px;font-size:.72rem;line-height:1.4;font-weight:750;color:#755c40}
+.model-episode{border-bottom:1px solid #d4c3a4;padding:13px 0}
+.model-episode:last-child{border-bottom:0;padding-bottom:0}
+.episode-top{display:flex;align-items:start;justify-content:space-between;gap:12px;font-size:.72rem;line-height:1.35}
+.episode-top span{color:#7c694f}.episode-top strong{color:#42624d;text-align:right}.model-episode.partial .episode-top strong{color:#975937}
+.model-episode.failed .episode-top strong{color:#8c3f36}
+.model-episode dl{display:grid;grid-template-columns:1fr 1fr;gap:8px 13px;margin:13px 0 0;font-size:.78rem}.model-episode dl div{min-width:0}.model-episode dt{color:#7b6850}.model-episode dd{margin:2px 0 0;font-weight:700;color:#3d3023}.model-empty{font-size:.84rem;color:#776750;margin:18px 0 4px}.model-note{color:#c2b198;font-size:.81rem;margin:24px 0 0;max-width:950px}
+@media(max-width:800px){.model-section{padding-block:75px 15px}.model-controls{grid-template-columns:1fr 1fr}.model-controls label:nth-child(2){grid-column:span 2;grid-row:2}.model-cards{grid-template-columns:1fr}.model-card-head h3{font-size:1.15rem}.model-episode dl{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.model-panel{padding:19px 16px}.model-controls{grid-template-columns:1fr}.model-controls label:nth-child(2){grid-column:auto;grid-row:auto}.model-episode dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
