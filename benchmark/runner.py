@@ -186,14 +186,21 @@ class OpenAICompatibleAgent:
 
 
 def run_episode(seed: int, agent: Any, max_turns: int | None = None, *,
-                probes: bool = True, scenario: str = "classic") -> dict[str, Any]:
+                probes: bool = True, scenario: str = "classic",
+                scenario_config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Return a local trace and outcomes; never pass hidden game state to agent."""
+    if scenario != "expedition" and scenario_config:
+        raise ValueError("scenario_config is supported only for expedition")
     if scenario == "classic":
         game = Game(seed, max_turns=120 if max_turns is None else max_turns)
         scenario_prompt = SYSTEM_PROMPT
     elif scenario == "realms":
         from benchmark.realms import DEFAULT_MAX_TURNS, Game as RealmsGame, SYSTEM_PROMPT as scenario_prompt
         game = RealmsGame(seed, max_turns=DEFAULT_MAX_TURNS if max_turns is None else max_turns)
+    elif scenario == "expedition":
+        from benchmark.expedition import DEFAULT_MAX_TURNS, Game as ExpeditionGame, SYSTEM_PROMPT as scenario_prompt
+        game = ExpeditionGame(seed, max_turns=DEFAULT_MAX_TURNS if max_turns is None else max_turns,
+                              **(scenario_config or {}))
     else:
         raise ValueError(f"Unknown scenario: {scenario}")
     if isinstance(agent, OpenAICompatibleAgent) and not agent._system_prompt_explicit:
@@ -219,8 +226,11 @@ def run_episode(seed: int, agent: Any, max_turns: int | None = None, *,
             count["correct"] += int(correct)
             evaluated_probes.append({**probe, "model_answer": answer, "correct": correct})
         result["probe_results"] = counts
-    return {"seed": seed, "scenario": scenario, "score": score(result), "trace": trace,
-            "final_observation": obs, "result": result, "probes": evaluated_probes}
+    episode = {"seed": seed, "scenario": scenario, "score": score(result), "trace": trace,
+               "final_observation": obs, "result": result, "probes": evaluated_probes}
+    if scenario == "expedition":
+        episode["config"] = dict(game.config)
+    return episode
 
 
 def aggregate_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
@@ -264,10 +274,18 @@ def aggregate_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate an agent on deterministic fantasy adventures")
     parser.add_argument("--agent", choices=("baseline", "openai"), default="baseline")
-    parser.add_argument("--scenario", choices=("classic", "realms"), default="classic",
+    parser.add_argument("--scenario", choices=("classic", "realms", "expedition"), default="classic",
                         help="Scenario to run (default: classic)")
     parser.add_argument("--seeds", type=int, nargs="+", default=[1, 2, 3])
-    parser.add_argument("--max-turns", type=int, help="Override scenario turn limit (classic: 120; realms: 300)")
+    parser.add_argument("--max-turns", type=int, help="Override scenario turn limit (classic: 120; realms: 300; expedition: 600)")
+    parser.add_argument("--map-size", type=int, choices=(6, 8, 10), help="Expedition overworld size")
+    parser.add_argument("--map-topology", choices=("winding", "mixed", "open"), help="Expedition path density")
+    parser.add_argument("--terrain-diversity", type=int, choices=(1, 2, 3), help="Expedition terrain variety")
+    parser.add_argument("--quest-difficulty", choices=("easy", "medium", "hard"), help="Expedition quest difficulty")
+    parser.add_argument("--combat-difficulty", choices=("easy", "medium", "hard"), help="Expedition combat difficulty")
+    parser.add_argument("--npc-difficulty", choices=("easy", "medium", "hard"), help="Expedition dialogue difficulty")
+    parser.add_argument("--character-class", choices=("generalist", "warrior", "mage", "scout"), help="Expedition character class")
+    parser.add_argument("--enemy-count", type=int, help="Number of additional expedition encounters")
     parser.add_argument("--model", help="Model name for the OpenAI-compatible chat-completions API")
     parser.add_argument("--api-url", default=os.getenv("OPENAI_API_URL", "https://api.openai.com/v1/chat/completions"), help="Complete chat-completions endpoint URL")
     parser.add_argument("--temperature", type=float, default=0)
@@ -284,7 +302,30 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--context-turns must be positive")
     if args.agent == "openai" and not args.model:
         parser.error("--model is required with --agent openai")
-    if args.scenario == "realms":
+    axis_args = {"map_size": args.map_size, "map_topology": args.map_topology,
+                 "terrain_diversity": args.terrain_diversity,
+                 "quest_difficulty": args.quest_difficulty, "combat_difficulty": args.combat_difficulty,
+                 "npc_difficulty": args.npc_difficulty, "character_class": args.character_class,
+                 "enemy_count": args.enemy_count}
+    if args.scenario != "expedition" and any(value is not None for value in axis_args.values()):
+        parser.error("difficulty parameters require --scenario expedition")
+    if args.enemy_count is not None and args.enemy_count < 0:
+        parser.error("--enemy-count must be non-negative")
+    scenario_config: dict[str, Any] | None = None
+    if args.scenario == "expedition":
+        from benchmark.expedition import DEFAULT_MAX_TURNS, ENGINE_VERSION as scenario_version, SYSTEM_PROMPT as scenario_prompt
+        max_turns = DEFAULT_MAX_TURNS if args.max_turns is None else args.max_turns
+        scenario_config = {
+            "map_size": 6 if args.map_size is None else args.map_size,
+            "map_topology": "mixed" if args.map_topology is None else args.map_topology,
+            "terrain_diversity": 2 if args.terrain_diversity is None else args.terrain_diversity,
+            "quest_difficulty": "easy" if args.quest_difficulty is None else args.quest_difficulty,
+            "combat_difficulty": "easy" if args.combat_difficulty is None else args.combat_difficulty,
+            "npc_difficulty": "easy" if args.npc_difficulty is None else args.npc_difficulty,
+            "character_class": "generalist" if args.character_class is None else args.character_class,
+            "enemy_count": args.enemy_count,
+        }
+    elif args.scenario == "realms":
         from benchmark.realms import DEFAULT_MAX_TURNS, ENGINE_VERSION as scenario_version, SYSTEM_PROMPT as scenario_prompt
         max_turns = DEFAULT_MAX_TURNS if args.max_turns is None else args.max_turns
     else:
@@ -294,7 +335,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         for seed in args.seeds:
             if args.agent == "baseline":
-                if args.scenario == "realms":
+                if args.scenario == "expedition":
+                    from benchmark.expedition_baseline import ExpeditionBaselineAgent
+                    agent = ExpeditionBaselineAgent()
+                elif args.scenario == "realms":
                     from benchmark.realms_baseline import RealmsBaselineAgent
                     agent = RealmsBaselineAgent()
                 else:
@@ -304,12 +348,16 @@ def main(argv: list[str] | None = None) -> int:
                     os.getenv("OPENAI_API_KEY", ""), temperature=args.temperature,
                     context_turns=args.context_turns, timeout=args.timeout,
                     system_prompt=scenario_prompt)
-            runs.append(run_episode(seed, agent, max_turns=max_turns, probes=not args.no_probes, scenario=args.scenario))
+            runs.append(run_episode(seed, agent, max_turns=max_turns, probes=not args.no_probes,
+                                    scenario=args.scenario, scenario_config=scenario_config))
         report = {"engine_version": scenario_version, "scenario": args.scenario, "max_turns": max_turns,
                   "aggregate": aggregate_runs(runs),
                   "agent": args.agent, "model": args.model if args.agent == "openai" else None,
                   "temperature": args.temperature if args.agent == "openai" else None,
                   "context_turns": args.context_turns, "probes_enabled": not args.no_probes and args.agent == "openai", "runs": runs}
+        if args.scenario == "expedition":
+            report["config"] = dict(runs[0]["config"])
+            report["component_versions"] = dict(runs[0]["result"]["component_versions"])
         output = json.dumps(report, ensure_ascii=False, indent=2)
         if args.output:
             with open(args.output, "w", encoding="utf-8") as f:

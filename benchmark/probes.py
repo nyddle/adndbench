@@ -19,6 +19,17 @@ _REALMS_QUEST = re.compile(
     r"^(?P<giver>[^:]+): найдите (?P<item>.+?) в месте «(?P<room>.+?)» "
     r"и принесите мне сюда, в «.+?»\."
 )
+# Expedition briefings and NPC clues have distinct formats.  These patterns
+# deliberately match only explicit observations about an item and its room;
+# quest plans, inventories, and the hidden world are not used as answer keys.
+_EXPEDITION_BRIEF = re.compile(
+    r"\bнайдите\s+(?P<item>[^«»\n]{1,160}?)\s+в месте «(?P<room>[^»]+)»",
+    re.IGNORECASE,
+)
+_EXPEDITION_HINT = re.compile(
+    r"Поручение «(?P<title>[^»]+)», шаг \d+: найти предмет «(?P<item>[^»]+)» "
+    r"в месте «(?P<room>[^»]+)»\."
+)
 
 
 def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[str, Any],
@@ -30,11 +41,12 @@ def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[
     the observation after the last action. No world internals are read. A quest
     still displayed in the last observation is excluded, so its answer is not
     accidentally supplied alongside the question. Fewer (or zero) questions are
-    produced if the episode contains insufficient evidence. For ``realms``,
+    produced if the episode contains insufficient evidence. For ``realms`` and
+    ``expedition``,
     compass displacements are only combined within the same observed zone;
     stairs are still eligible for navigation recall.
     """
-    if scenario not in ("classic", "realms"):
+    if scenario not in ("classic", "realms", "expedition"):
         raise ValueError("unknown scenario")
     if not isinstance(max_per_capability, int) or isinstance(max_per_capability, bool) or max_per_capability < 0:
         raise ValueError("max_per_capability must be a non-negative integer")
@@ -56,7 +68,8 @@ def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[
         message = obs.get("message")
         if isinstance(message, str) and message != final_observation.get("message"):
             match = (_QUEST.fullmatch(message) if scenario == "classic"
-                     else _REALMS_QUEST.match(message))
+                     else _REALMS_QUEST.match(message) if scenario == "realms"
+                     else None)
             if match:
                 giver, item, location = match.group("giver", "item", "room")
                 quest_key = (giver, item)
@@ -68,6 +81,32 @@ def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[
                         "id": f"quest_memory_{memory_count}",
                         "capability": "quest_memory",
                         "question": f"В каком месте {giver} попросил найти {item}? Ответьте только названием места.",
+                        "answer": location,
+                    })
+            if scenario == "expedition":
+                # Hints may be provided by a third-party informant, so avoid
+                # claiming that the current NPC originally gave the quest.
+                hints = list(_EXPEDITION_HINT.finditer(message))
+                briefings = list(_EXPEDITION_BRIEF.finditer(message))
+                for clue in hints + briefings:
+                    item, location = clue.group("item", "room")
+                    title = clue.groupdict().get("title")
+                    if title:
+                        question = (f"В каком месте нужно найти {item} по поручению «{title}»? "
+                                    "Ответьте только названием места.")
+                    else:
+                        question = f"В каком месте поручили найти {item}? Ответьте только названием места."
+                    quest_key = (item.casefold(), location.casefold())
+                    if (quest_key in seen_quests or memory_count >= max_per_capability
+                            or location.casefold() in final_text
+                            or location.casefold() in question.casefold()):
+                        continue
+                    seen_quests.add(quest_key)
+                    memory_count += 1
+                    probes.append({
+                        "id": f"quest_memory_{memory_count}",
+                        "capability": "quest_memory",
+                        "question": question,
                         "answer": location,
                     })
         action = turn.get("action")

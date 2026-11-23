@@ -16,6 +16,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Mapping
 
+CHARACTER_VERSION = 'characters-1'
+
 
 # These descriptions are public rules, not hints based on hidden world state.
 _PROFILES: dict[str, dict[str, Any]] = {
