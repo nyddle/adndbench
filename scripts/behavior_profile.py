@@ -27,7 +27,7 @@ SCENARIOS = (
     ('Выбор партии, фиксированный случай', 'party_tactics', 'party-case'),
     ('Тактика, три врага: фиксированный случай', 'party_tactics', 'tactics-three'),
     ('Полная игра', 'integrated', 'integrated-gradient-dev'),
-    ('Полная игра hard, 3 мира', 'independent_integrated', 'full-hard-3'),
+    ('Полная игра hard, 3 мира', 'parallel_integrated', 'full-hard-3-parallel'),
 )
 
 
@@ -49,6 +49,9 @@ def configured(kind, name):
         runner.configure(); return runner.engine
     if kind == 'independent_integrated':
         from scripts import independent_gradient_calibration as runner
+        runner.configure(); return runner.engine
+    if kind == 'parallel_integrated':
+        from scripts import parallel_gradient_calibration as runner
         runner.configure(); return runner.engine
     if kind == 'party_tactics':
         from scripts import three_model_party_tactics as runner
@@ -89,7 +92,7 @@ def extract(kind, name, split):
         result = public_result(game.result())
         score = components = None
         score_version = None
-        if kind in ('integrated', 'independent_integrated') and status == 'completed':
+        if kind in ('integrated', 'independent_integrated', 'parallel_integrated') and status == 'completed':
             from benchmark import radical_efficiency_score
             grade = radical_efficiency_score.score(game, [turn['action'] for turn in record['turns']], episode_status=status)
             score = grade['score']
@@ -106,6 +109,17 @@ def extract(kind, name, split):
                   if fork else None)
     measurement = ('party_choice_feasible_by_oracle' if kind == 'party_tactics' and plan['axis']=='party'
                    else 'model_played_combat' if kind == 'party_tactics' else 'game_outcome')
+    execution_note = None
+    if kind == 'parallel_integrated' and plan.get('parallel_migration'):
+        from scripts.parallel_gradient_calibration import INPUT_RESERVE
+        boundary = plan['parallel_migration']['sequential_dev_receipts']
+        execution_note = f'Начат последовательно, продолжен параллельно после {boundary} вызовов; прежние вызовы не повторялись.'
+        receipts = state['receipts'][split]
+        reported = sum(item.get('usage', {}).get('input_tokens', 0) for item in receipts)
+        if (split == 'dev' and any(item['status'] == 'ready' for item in episodes)
+                and not any(item.get('status') == 'inflight' for item in receipts)
+                and reported + INPUT_RESERVE > plan['max_input_tokens_per_split']):
+            execution_note += ' Незавершённые партии остановлены при достижении бюджета.'
     return {'axis':plan['axis'], 'level':plan['level'], 'split':split, 'measurement':measurement,
             'fixed_case':kind == 'party_tactics',
             'success_definition':('BFS finds a winning strategy for the chosen party, without model executing it'
@@ -115,6 +129,7 @@ def extract(kind, name, split):
             'effort':plan['reasoning_effort'], 'context_turns':plan['context_turns'],
             'cli_version':plan['cli_version'], 'adapter':plan['adapter'],
             'max_actions':plan['max_actions_per_game'], 'game_config':plan.get('game_config'),
+            'execution_note':execution_note,
             'plan_name':name, 'fork_provenance':provenance, 'episodes':episodes}
 
 

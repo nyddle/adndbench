@@ -30,6 +30,13 @@ class DashboardExportTest(unittest.TestCase):
         self.assertEqual(episode['score_breakdown']['efficiency']['earned'], 8.85)
         self.assertNotIn('private', episode['score_breakdown']['efficiency'])
 
+    def test_execution_note_is_exported_as_public_metadata(self):
+        source = {'scenarios': [{'execution_note': 'Параллельный исполнитель',
+                                'private_note': 'not public', 'episodes': []}]}
+        scenario = sanitize(source)[0]
+        self.assertEqual(scenario['execution_note'], 'Параллельный исполнитель')
+        self.assertNotIn('private_note', scenario)
+
     def test_unknown_score_protocol_does_not_invent_components(self):
         result = sanitize({'scenarios': [{'episodes': [{
             'model': 'gpt-6-luna', 'score_version': 'unknown',

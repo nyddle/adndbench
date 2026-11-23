@@ -1,12 +1,32 @@
 import unittest
-from scripts.behavior_profile import summarize, public_result, markdown, scenario_for_split, SCENARIOS
+from unittest.mock import patch
+from types import SimpleNamespace
+from scripts.behavior_profile import summarize, public_result, markdown, scenario_for_split, SCENARIOS, extract
 
 class BehaviorProfileTest(unittest.TestCase):
     def test_expanded_runs_have_unique_conditions(self):
         names = [name for _, _, name in SCENARIOS]
         self.assertEqual(len(names), len(set(names)))
-        for name in ('expanded-memory-s8', 'expanded-quest-extreme', 'full-hard-3'):
+        for name in ('expanded-memory-s8', 'expanded-quest-extreme', 'full-hard-3-parallel'):
             self.assertIn(name, names)
+
+    def test_parallel_budget_stop_is_a_note_not_a_game_outcome(self):
+        from scripts.parallel_gradient_calibration import INPUT_RESERVE
+        plan = {'axis':'radical-adventure', 'level':'custom', 'reasoning_effort':'low',
+                'context_turns':10, 'cli_version':'test', 'adapter':'radical',
+                'max_actions_per_game':100, 'max_input_tokens_per_split':INPUT_RESERVE,
+                'parallel_migration':{'sequential_dev_receipts':3}}
+        state = {'episodes':{'episode':{'status':'ready','turns':[]}},
+                 'receipts':{'dev':[{'status':'completed','usage':{'input_tokens':1}}]}}
+        fake = SimpleNamespace(load=lambda name: (None,plan,state),
+                specs=lambda p,split: [(1,'private','gpt-6-luna')],
+                key_for=lambda split,world,model: 'episode')
+        with patch('scripts.behavior_profile.configured', return_value=fake):
+            result = extract('parallel_integrated','example','dev')
+        self.assertIn('остановлены при достижении бюджета', result['execution_note'])
+        self.assertEqual(result['episodes'][0]['status'], 'ready')
+        self.assertIsNone(result['episodes'][0]['score'])
+        self.assertIsNone(result['episodes'][0]['result'])
 
     def test_terminal_denominator_excludes_incomplete_and_failure_is_not_success(self):
         episodes = [

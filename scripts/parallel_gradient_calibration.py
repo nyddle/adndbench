@@ -22,6 +22,9 @@ engine=gradient.engine
 radical=gradient.radical
 BASE=Path.home()/'.local/share/adndbench/parallel-gradient-calibrations'
 WORKERS=3
+# All three model metadata currently advertise at most 500k context tokens.
+# Reserve that entire window per outstanding call when checking reported input.
+INPUT_RESERVE=500_000
 
 def fingerprint(adapter):
     h=hashlib.sha256()
@@ -62,9 +65,15 @@ def run(name,split):
                         rec['status']='action_limit';engine.write(d/'state.json',st);continue
                     receipts=st['receipts'][split]
                     if (len(receipts)>=p['max_calls_per_split'] or
-                        sum(x.get('usage',{}).get('input_tokens',0) for x in receipts)>=p['max_input_tokens_per_split'] or
                         time.monotonic()-started>=p['max_wall_seconds_per_run']):
                         q.appendleft((world,seed,model,key));budget_stopped=True;break
+                    reported=sum(x.get('usage',{}).get('input_tokens',0) for x in receipts)
+                    if reported+(len(pending)+1)*INPUT_RESERVE>p['max_input_tokens_per_split']:
+                        q.appendleft((world,seed,model,key))
+                        # Reassess after active calls settle; only stop if even
+                        # a single additional call cannot be reserved.
+                        if not pending:budget_stopped=True
+                        break
                     obs=game.observe();rec['status']='inflight'
                     receipt={'episode':key,'number':len(receipts)+1,'status':'inflight'}
                     receipts.append(receipt);engine.write(d/'state.json',st)

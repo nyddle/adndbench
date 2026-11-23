@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULTS = [ROOT / 'docs/behavior-profile-results.json',
             ROOT / 'docs/behavior-profile-holdout.json']
 SCENARIO_KEYS = ('axis', 'level', 'split', 'measurement', 'fixed_case', 'effort',
-                 'context_turns', 'cli_version', 'max_actions', 'label')
+                 'context_turns', 'cli_version', 'max_actions', 'label', 'execution_note')
 CONFIG_KEYS = ('combat', 'max_turns', 'memory', 'navigation', 'party', 'quests')
 RESULT_KEYS = ('terminal_reason', 'turns', 'invalid_actions', 'completed_tasks',
                'rooms_visited', 'rooms_total', 'relic', 'combat_status', 'combat_rounds',

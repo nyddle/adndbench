@@ -12,7 +12,7 @@ class ParallelRunnerTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         e=parallel.engine;r=parallel.radical
-        patches=[patch.object(parallel,'BASE',Path(self.tmp.name)),
+        patches=[patch.object(parallel,'BASE',Path(self.tmp.name)),patch.object(parallel,'INPUT_RESERVE',1),
                  patch.multiple(e,BASE=e.BASE,MODELS=e.MODELS,fingerprint=e.fingerprint,create_game=e.create_game,
                                 rule=e.rule,actions=e.actions,canonical_action=e.canonical_action,status=e.status,prompt=e.prompt),
                  patch.object(r,'fingerprint',r.fingerprint),patch.object(r,'rule',r.rule),
@@ -57,5 +57,16 @@ class ParallelRunnerTests(unittest.TestCase):
         _,_,s=e.load('limited');self.assertEqual(len(s['receipts']['dev']),4)
         self.assertTrue(all(r['status']=='ready' for r in s['episodes'].values()))
         for rec in s['episodes'].values():self.assertNotIn('result',rec)
+
+    def test_input_reservation_stops_before_launching_over_budget(self):
+        e=parallel.engine
+        config={'memory':'medium','navigation':'easy','quests':'hard','combat':'medium','party':True,'max_turns':2}
+        with contextlib.redirect_stdout(io.StringIO()):parallel.radical.init('tokens',config,1,1,2,10,6,2)
+        def call(prompt,model,timeout):return {'action':{'type':'talk'},'usage':{'input_tokens':3}}
+        with patch.object(parallel,'INPUT_RESERVE',3),patch.object(e,'call',side_effect=call) as mock,contextlib.redirect_stdout(io.StringIO()):parallel.run('tokens','dev')
+        self.assertEqual(mock.call_count,2)
+        _,_,s=e.load('tokens')
+        self.assertEqual(sum(r['usage']['input_tokens'] for r in s['receipts']['dev']),6)
+        self.assertTrue(all(r['status']=='ready' for r in s['episodes'].values()))
 
 if __name__=='__main__':unittest.main()
