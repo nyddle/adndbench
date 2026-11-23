@@ -1,0 +1,142 @@
+{
+  "version": "memory-navigation-episodes-0.1.0",
+  "fingerprint": "48d3f6e78545f255f9ac7dd515ee5d650f4f53010d3ca9f5c9e580119c53e55a",
+  "agent_description": "handwritten local controls, not LLMs",
+  "worlds_per_group": 200,
+  "public_development_seeds": "dev-control-0 through dev-control-199",
+  "groups": [
+    {
+      "vector": "memory",
+      "level": "easy",
+      "agent": "remember",
+      "completed": 200,
+      "incorrect_answer": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 6.0,
+      "elapsed_seconds": 0.006
+    },
+    {
+      "vector": "memory",
+      "level": "easy",
+      "agent": "latest",
+      "completed": 52,
+      "incorrect_answer": 148,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 6.0,
+      "elapsed_seconds": 0.006
+    },
+    {
+      "vector": "memory",
+      "level": "medium",
+      "agent": "remember",
+      "completed": 200,
+      "incorrect_answer": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 14.0,
+      "elapsed_seconds": 0.016
+    },
+    {
+      "vector": "memory",
+      "level": "medium",
+      "agent": "latest",
+      "completed": 50,
+      "incorrect_answer": 150,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 14.0,
+      "elapsed_seconds": 0.017
+    },
+    {
+      "vector": "memory",
+      "level": "hard",
+      "agent": "remember",
+      "completed": 200,
+      "incorrect_answer": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 34.0,
+      "elapsed_seconds": 0.038
+    },
+    {
+      "vector": "memory",
+      "level": "hard",
+      "agent": "latest",
+      "completed": 55,
+      "incorrect_answer": 145,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 34.0,
+      "elapsed_seconds": 0.04
+    },
+    {
+      "vector": "navigation",
+      "level": "easy",
+      "agent": "map_dfs",
+      "completed": 200,
+      "incorrect_answer": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 7.0,
+      "elapsed_seconds": 0.018
+    },
+    {
+      "vector": "navigation",
+      "level": "easy",
+      "agent": "first_exit",
+      "completed": 18,
+      "incorrect_answer": 0,
+      "turn_limit": 182,
+      "invalid_actions": 0,
+      "median_turns_all": 16.0,
+      "elapsed_seconds": 0.02
+    },
+    {
+      "vector": "navigation",
+      "level": "medium",
+      "agent": "map_dfs",
+      "completed": 200,
+      "incorrect_answer": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 18.0,
+      "elapsed_seconds": 0.048
+    },
+    {
+      "vector": "navigation",
+      "level": "medium",
+      "agent": "first_exit",
+      "completed": 2,
+      "incorrect_answer": 0,
+      "turn_limit": 198,
+      "invalid_actions": 0,
+      "median_turns_all": 48.0,
+      "elapsed_seconds": 0.058
+    },
+    {
+      "vector": "navigation",
+      "level": "hard",
+      "agent": "map_dfs",
+      "completed": 200,
+      "incorrect_answer": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 40.0,
+      "elapsed_seconds": 0.091
+    },
+    {
+      "vector": "navigation",
+      "level": "hard",
+      "agent": "first_exit",
+      "completed": 2,
+      "incorrect_answer": 0,
+      "turn_limit": 198,
+      "invalid_actions": 0,
+      "median_turns_all": 96.0,
+      "elapsed_seconds": 0.107
+    }
+  ],
+  "elapsed_seconds": 0.466
+}

@@ -1,0 +1,37 @@
+{
+  "version": "short-memory-0.1.0",
+  "fingerprint": "64222d1a8c610c8b260f1c0b737d291a2b1ea8c4459f8b049402c3e8f8a662bf",
+  "seed_set": "public-short-audit-0..999",
+  "worlds": 1000,
+  "groups": {
+    "s4": {
+      "first_candidate": 165,
+      "initial_owner": 0,
+      "last_pair_contains_owner": 0,
+      "penultimate_pair_contains_owner": 715,
+      "most_active_person": 58,
+      "tracker_correct": 1000
+    },
+    "s6": {
+      "first_candidate": 169,
+      "initial_owner": 0,
+      "last_pair_contains_owner": 0,
+      "penultimate_pair_contains_owner": 277,
+      "most_active_person": 72,
+      "tracker_correct": 1000
+    },
+    "s8": {
+      "first_candidate": 171,
+      "initial_owner": 0,
+      "last_pair_contains_owner": 0,
+      "penultimate_pair_contains_owner": 275,
+      "most_active_person": 105,
+      "tracker_correct": 1000
+    }
+  },
+  "paired_prefixes": {
+    "same_4_6": 723,
+    "same_6_8": 725
+  },
+  "note": "Development construction audit, no LLM. Each conditional filter and these heuristics change distributions; not a general shortcut proof."
+}

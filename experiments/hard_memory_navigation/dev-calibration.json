@@ -1,0 +1,167 @@
+{
+  "version": "hard-memory-navigation-0.1.0",
+  "fingerprint": "b60929e73aea6af1490622f4322c3c37a30bfe5ae46d68e638d29f86b8bc78e4",
+  "world_set": "public-development-worlds-0..99",
+  "groups": [
+    {
+      "axis": "memory",
+      "level": "base",
+      "control": "recall",
+      "worlds": 100,
+      "completed": 100,
+      "outcomes": {
+        "completed": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 14.0,
+      "elapsed_seconds": 0.028
+    },
+    {
+      "axis": "memory",
+      "level": "base",
+      "control": "first_person",
+      "worlds": 100,
+      "completed": 10,
+      "outcomes": {
+        "incorrect_answer": 90,
+        "completed": 10
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 14.0,
+      "elapsed_seconds": 0.028
+    },
+    {
+      "axis": "memory",
+      "level": "hard",
+      "control": "recall",
+      "worlds": 100,
+      "completed": 100,
+      "outcomes": {
+        "completed": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 38.0,
+      "elapsed_seconds": 0.06
+    },
+    {
+      "axis": "memory",
+      "level": "hard",
+      "control": "first_person",
+      "worlds": 100,
+      "completed": 8,
+      "outcomes": {
+        "incorrect_answer": 92,
+        "completed": 8
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 38.0,
+      "elapsed_seconds": 0.058
+    },
+    {
+      "axis": "memory",
+      "level": "extreme",
+      "control": "recall",
+      "worlds": 100,
+      "completed": 100,
+      "outcomes": {
+        "completed": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 74.0,
+      "elapsed_seconds": 0.123
+    },
+    {
+      "axis": "memory",
+      "level": "extreme",
+      "control": "first_person",
+      "worlds": 100,
+      "completed": 6,
+      "outcomes": {
+        "incorrect_answer": 94,
+        "completed": 6
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 74.0,
+      "elapsed_seconds": 0.123
+    },
+    {
+      "axis": "navigation",
+      "level": "base",
+      "control": "map_explorer",
+      "worlds": 100,
+      "completed": 100,
+      "outcomes": {
+        "completed": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 25.0,
+      "elapsed_seconds": 0.037
+    },
+    {
+      "axis": "navigation",
+      "level": "base",
+      "control": "first_exit",
+      "worlds": 100,
+      "completed": 0,
+      "outcomes": {
+        "turn_limit": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 100.0,
+      "elapsed_seconds": 0.045
+    },
+    {
+      "axis": "navigation",
+      "level": "hard",
+      "control": "map_explorer",
+      "worlds": 100,
+      "completed": 100,
+      "outcomes": {
+        "completed": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 54.0,
+      "elapsed_seconds": 0.077
+    },
+    {
+      "axis": "navigation",
+      "level": "hard",
+      "control": "first_exit",
+      "worlds": 100,
+      "completed": 0,
+      "outcomes": {
+        "turn_limit": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 196.0,
+      "elapsed_seconds": 0.087
+    },
+    {
+      "axis": "navigation",
+      "level": "extreme",
+      "control": "map_explorer",
+      "worlds": 100,
+      "completed": 100,
+      "outcomes": {
+        "completed": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 75.0,
+      "elapsed_seconds": 0.124
+    },
+    {
+      "axis": "navigation",
+      "level": "extreme",
+      "control": "first_exit",
+      "worlds": 100,
+      "completed": 0,
+      "outcomes": {
+        "turn_limit": 100
+      },
+      "invalid_actions": 0,
+      "median_turns_all": 324.0,
+      "elapsed_seconds": 0.145
+    }
+  ],
+  "note": "No model calls. Observation-only controls; results do not establish LLM difficulty."
+}

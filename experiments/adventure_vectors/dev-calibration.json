@@ -1,0 +1,206 @@
+{
+  "fingerprint": "8d42a25e658c96dab58edaae2271230e865afe2900316fae16193c3a14cc5575",
+  "seed_set": "public-adventure-dev-0..99",
+  "worlds_per_group": 100,
+  "groups": [
+    {
+      "axis": "memory",
+      "level": "easy",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 23.0,
+      "elapsed_seconds": 0.07
+    },
+    {
+      "axis": "memory",
+      "level": "easy",
+      "strategy": "guess_code",
+      "completed": 30,
+      "incorrect_code": 70,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 21.0,
+      "elapsed_seconds": 0.066
+    },
+    {
+      "axis": "memory",
+      "level": "medium",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 23.0,
+      "elapsed_seconds": 0.069
+    },
+    {
+      "axis": "memory",
+      "level": "medium",
+      "strategy": "guess_code",
+      "completed": 11,
+      "incorrect_code": 89,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 20.0,
+      "elapsed_seconds": 0.065
+    },
+    {
+      "axis": "memory",
+      "level": "hard",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 23.0,
+      "elapsed_seconds": 0.069
+    },
+    {
+      "axis": "memory",
+      "level": "hard",
+      "strategy": "guess_code",
+      "completed": 4,
+      "incorrect_code": 96,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 20.0,
+      "elapsed_seconds": 0.065
+    },
+    {
+      "axis": "navigation",
+      "level": "easy",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 23.0,
+      "elapsed_seconds": 0.07
+    },
+    {
+      "axis": "navigation",
+      "level": "easy",
+      "strategy": "first_exit",
+      "completed": 0,
+      "incorrect_code": 0,
+      "turn_limit": 100,
+      "invalid_actions": 0,
+      "median_turns_all": 200.0,
+      "elapsed_seconds": 0.226
+    },
+    {
+      "axis": "navigation",
+      "level": "medium",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 25.0,
+      "elapsed_seconds": 0.061
+    },
+    {
+      "axis": "navigation",
+      "level": "medium",
+      "strategy": "first_exit",
+      "completed": 0,
+      "incorrect_code": 0,
+      "turn_limit": 100,
+      "invalid_actions": 0,
+      "median_turns_all": 200.0,
+      "elapsed_seconds": 0.226
+    },
+    {
+      "axis": "navigation",
+      "level": "hard",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 25.0,
+      "elapsed_seconds": 0.057
+    },
+    {
+      "axis": "navigation",
+      "level": "hard",
+      "strategy": "first_exit",
+      "completed": 0,
+      "incorrect_code": 0,
+      "turn_limit": 100,
+      "invalid_actions": 0,
+      "median_turns_all": 200.0,
+      "elapsed_seconds": 0.232
+    },
+    {
+      "axis": "quests",
+      "level": "easy",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 23.0,
+      "elapsed_seconds": 0.068
+    },
+    {
+      "axis": "quests",
+      "level": "easy",
+      "strategy": "goal_first",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 23.0,
+      "elapsed_seconds": 0.069
+    },
+    {
+      "axis": "quests",
+      "level": "medium",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 37.0,
+      "elapsed_seconds": 0.136
+    },
+    {
+      "axis": "quests",
+      "level": "medium",
+      "strategy": "goal_first",
+      "completed": 0,
+      "incorrect_code": 0,
+      "turn_limit": 100,
+      "invalid_actions": 18535,
+      "median_turns_all": 200.0,
+      "elapsed_seconds": 0.438
+    },
+    {
+      "axis": "quests",
+      "level": "hard",
+      "strategy": "map_and_recall",
+      "completed": 100,
+      "incorrect_code": 0,
+      "turn_limit": 0,
+      "invalid_actions": 0,
+      "median_turns_all": 45.0,
+      "elapsed_seconds": 0.202
+    },
+    {
+      "axis": "quests",
+      "level": "hard",
+      "strategy": "goal_first",
+      "completed": 0,
+      "incorrect_code": 0,
+      "turn_limit": 100,
+      "invalid_actions": 18841,
+      "median_turns_all": 200.0,
+      "elapsed_seconds": 0.615
+    }
+  ],
+  "elapsed_seconds": 2.804
+}

@@ -254,3 +254,382 @@ def check_response(probe: Mapping[str, Any], response: Any) -> bool:
     return (response.get('id') == probe.get('id') and isinstance(answer, str)
             and isinstance(probe.get('answer'), str)
             and _normalize(answer) == _normalize(probe['answer']))
+
+
+# The v2 protocol is deliberately separate: generate_suite() and VERSION retain
+# their original semantics for recorded evaluations.  A runner must explicitly
+# opt in to generate_suite_v2 and record FIXED_PROBES_V2 in its experiment spec.
+FIXED_PROBES_V2 = 'fixed-probes-0.2.0'
+
+
+def _v2_rng(seed: str, domain: str) -> _Stream:
+    return _Stream(seed, f'{FIXED_PROBES_V2}:{domain}')
+
+
+def _v2_displacement(seed: str, difficulty: str) -> list[dict[str, Any]]:
+    """Balanced rotations of a walk with all four directions present."""
+    rng = _v2_rng(seed, f'{difficulty}:displacement')
+    # Include zero, cardinal, and diagonal displacements. All four directions
+    # appear, so the original missing-opposite shortcut cannot solve this task.
+    targets = [(0, 0), (2, 0), (1, 1), (2, 1), (1, -2)]
+    dx, dy = targets[rng.below(len(targets))]
+    padding = (2 if difficulty == 'medium' else 4) + rng.below(3)
+    horizontal = ['east'] * (padding + max(dx, 0)) + ['west'] * (padding + max(-dx, 0))
+    vertical = ['north'] * (padding + max(dy, 0)) + ['south'] * (padding + max(-dy, 0))
+    steps = horizontal + vertical
+    rng.shuffle(steps)
+    choices = ['north', 'north-east', 'east', 'south-east', 'south',
+               'south-west', 'west', 'north-west', 'same']
+
+    def answer(x: int, y: int) -> str:
+        if not x and not y:
+            return 'same'
+        vertical_part = 'north' if y > 0 else 'south' if y < 0 else ''
+        horizontal_part = 'east' if x > 0 else 'west' if x < 0 else ''
+        return '-'.join(part for part in (vertical_part, horizontal_part) if part)
+
+    variants = []
+    for rotation in range(4):
+        rotated = [_DIRECTIONS[(_DIRECTIONS.index(d) + rotation) % 4] for d in steps]
+        x, y = dx, dy
+        for _ in range(rotation):
+            x, y = y, -x
+        variants.append(_probe('v2_spatial_displacement', 'spatial_reasoning', difficulty,
+            {'movements': rotated, 'directions': choices,
+             'rules': 'Направления постоянны; каждое перемещение равно одной клетке.'},
+            'В каком направлении от начальной точки находится конечная? '
+            'Для диагонали используйте north-east, south-east, south-west или north-west; '
+            'для совпадающих точек — same.', answer(x, y)))
+    _v2_rng(seed, f'{difficulty}:displacement:orientation-order').shuffle(variants)
+    for i, probe in enumerate(variants, 1):
+        probe['id'] = f'v2_spatial_displacement_{i}'
+    return variants
+
+
+def _v2_route(seed: str, difficulty: str) -> list[dict[str, Any]]:
+    """Weighted cyclic map, with the reference obtained by Dijkstra's algorithm."""
+    import heapq
+
+    rng = _v2_rng(seed, f'{difficulty}:route')
+    side = 4 if difficulty == 'medium' else 5
+    positions = [(x, y) for y in range(side) for x in range(side)]
+    edges: dict[tuple[int, int], dict[str, tuple[tuple[int, int], int]]] = {p: {} for p in positions}
+    # A randomized spanning tree guarantees connectivity before cycles are added.
+    visited = {positions[0]}
+    stack = [positions[0]]
+    while stack:
+        x, y = stack[-1]
+        candidates = [(direction, (x + vx, y + vy)) for direction, (vx, vy) in _VECTORS.items()
+                      if (x + vx, y + vy) in edges and (x + vx, y + vy) not in visited]
+        if not candidates:
+            stack.pop()
+            continue
+        direction, other = candidates[rng.below(len(candidates))]
+        cost = 1 + rng.below(9)
+        edges[(x, y)][direction] = (other, cost)
+        edges[other][_OPPOSITE[direction]] = ((x, y), cost)
+        visited.add(other)
+        stack.append(other)
+    # Add cycles, retaining one shared weight for each pair of reverse edges.
+    remaining = [(p, direction, (p[0] + vx, p[1] + vy))
+                 for p in positions for direction, (vx, vy) in _VECTORS.items()
+                 if direction in ('east', 'south') and (p[0] + vx, p[1] + vy) in edges
+                 and direction not in edges[p]]
+    rng.shuffle(remaining)
+    for p, direction, other in remaining[:max(2, len(remaining) * 2 // 3)]:
+        cost = 1 + rng.below(9)
+        edges[p][direction] = (other, cost)
+        edges[other][_OPPOSITE[direction]] = (p, cost)
+
+    def distances(start: tuple[int, int]):
+        dist = {start: 0}
+        paths = {start: 1}
+        route: dict[tuple[int, int], list[str]] = {start: []}
+        queue = [(0, start)]
+        while queue:
+            distance, current = heapq.heappop(queue)
+            if distance != dist[current]:
+                continue
+            for direction, (target, weight) in edges[current].items():
+                candidate = distance + weight
+                if candidate < dist.get(target, float('inf')):
+                    dist[target] = candidate
+                    paths[target] = paths[current]
+                    route[target] = route[current] + [direction]
+                    heapq.heappush(queue, (candidate, target))
+                elif candidate == dist.get(target):
+                    paths[target] = min(2, paths[target] + paths[current])
+        return dist, paths, route
+
+    choices = []
+    for start in positions:
+        if len(edges[start]) < 2:
+            continue
+        dist, paths, routes = distances(start)
+        for dest in positions:
+            if dest != start and paths.get(dest) == 1 and len(routes[dest]) >= 4:
+                choices.append((dist[dest], start, dest, routes[dest]))
+    if not choices:
+        raise RuntimeError('no unique non-trivial weighted route')
+    # Random selection from the longest weighted routes avoids a fixed endpoint.
+    choices.sort(key=lambda item: item[0], reverse=True)
+    _, start, dest, solution = choices[rng.below(min(10, len(choices)))]
+    # Names remain unambiguous at both supported map sizes.
+    labels = list(_ROOM_NAMES) + [f'Локация {i:02d}' for i in range(1, 10)]
+    rng.shuffle(labels)
+    names = {p: labels[i] for i, p in enumerate(positions)}
+    variants = []
+    for rotation in range(4):
+        rooms = []
+        for p in positions:
+            exits = {_DIRECTIONS[(_DIRECTIONS.index(direction) + rotation) % 4]:
+                     {'room': names[target], 'cost': cost}
+                     for direction, (target, cost) in edges[p].items()}
+            rooms.append({'room': names[p], 'exits': exits})
+        _v2_rng(seed, f'{difficulty}:route:room-order:{rotation}').shuffle(rooms)
+        first = _DIRECTIONS[(_DIRECTIONS.index(solution[0]) + rotation) % 4]
+        variants.append(_probe('v2_spatial_route', 'spatial_reasoning', difficulty,
+            {'observed_map': rooms, 'rules': 'Указаны все проходы; стоимость каждого прохода положительна. '
+                                            'Все проходы обратимы и доступны.'},
+            f'Вы находитесь в «{names[start]}». Какой первый выход ведёт в «{names[dest]}» '
+            'маршрутом с наименьшей суммарной стоимостью? '
+            'Ответьте одним из north, east, south, west.', first))
+    _v2_rng(seed, f'{difficulty}:route:orientation-order').shuffle(variants)
+    for i, probe in enumerate(variants, 1):
+        probe['id'] = f'v2_spatial_route_{i}'
+    return variants
+
+
+def _v2_quests(seed: str, difficulty: str) -> list[dict[str, Any]]:
+    """Several interleaved updates; queried updates are not always last."""
+    rng = _v2_rng(seed, f'{difficulty}:quests')
+    count = 6 if difficulty == 'medium' else 8
+    people, items, places = list(_PEOPLE), list(_ITEMS), list(_PLACES)
+    for values in (people, items, places):
+        rng.shuffle(values)
+    start_locations = places[:count]
+    events = [f'{people[i]} просит найти {items[i]} в месте «{start_locations[i]}».' for i in range(count)]
+    person_index = rng.below(count)
+    location_index = (person_index + 1 + rng.below(count - 1)) % count
+    updates = list(range(count))
+    rng.shuffle(updates)
+    target_position = updates.index(location_index)
+    if target_position in (0, len(updates) - 1):
+        updates[target_position], updates[len(updates) // 2] = updates[len(updates) // 2], updates[target_position]
+    current = list(start_locations)
+    # The queried quest changes twice, with other quests interleaved before
+    # the last update. The latest matching event, not the first, is authoritative.
+    first_options = [place for place in places if place != current[location_index]]
+    current[location_index] = first_options[rng.below(len(first_options))]
+    events.append(f'Изменение поручения: {people[location_index]} сообщает, что {items[location_index]} '
+                  f'теперь находится в месте «{current[location_index]}».')
+    for i in updates:
+        options = [place for place in places if place != current[i]]
+        current[i] = options[rng.below(len(options))]
+        events.append(f'Изменение поручения: {people[i]} сообщает, что {items[i]} '
+                      f'теперь находится в месте «{current[i]}».')
+    history = {'history': events, 'rules': 'Показана вся история; более поздние изменения заменяют прежние сведения.'}
+    return [
+        _probe('v2_quest_assignment', 'quest_memory', difficulty, copy.deepcopy(history),
+               f'Какой предмет попросил найти {people[person_index]}? Ответьте только названием предмета.',
+               items[person_index]),
+        _probe('v2_quest_update', 'quest_memory', difficulty, copy.deepcopy(history),
+               f'Где сейчас нужно найти {items[location_index]} для персонажа {people[location_index]}? '
+               'Ответьте только названием места.', current[location_index]),
+    ]
+
+
+def generate_suite_v2(seed: str | int, difficulty: str = 'medium') -> list[dict[str, Any]]:
+    """Opt-in v2 suite; old generate_suite and saved v1 scores are unchanged.
+
+    Returns four rotations each of two common-state spatial tasks plus two
+    contextual quest tasks. Rotations of the same task remain correlated. The
+    caller must record FIXED_PROBES_V2 and use fresh held-out evaluation seeds;
+    never mix these scores with v1. public_probe strips private answer keys.
+    """
+    if not isinstance(seed, (str, int)) or isinstance(seed, bool):
+        raise ValueError('seed must be a string or integer')
+    if difficulty not in ('medium', 'hard'):
+        raise ValueError('v2 difficulty must be medium or hard')
+    value = str(seed)
+    return [*_v2_displacement(value, difficulty), *_v2_route(value, difficulty),
+            *_v2_quests(value, difficulty)]
+
+
+# V3 is an opt-in research protocol. Each question uses an independently
+# generated state, rather than rotations of one state; the shared seed still
+# means that questions within one suite are clustered for statistical analysis.
+FIXED_PROBES_V3 = 'fixed-probes-0.3.0'
+
+
+def _v3_rng(seed: str, domain: str) -> _Stream:
+    return _Stream(seed, f'{FIXED_PROBES_V3}:{domain}')
+
+
+def _v3_walk(seed: str, index: int, target: str) -> dict[str, Any]:
+    """Navigate 8–12 relative turns while tracking heading and displacement."""
+    rng = _v3_rng(seed, f'walk:{index}')
+    commands = ('forward', 'left', 'right', 'back')
+    rotations = {'forward': 0, 'left': -1, 'right': 1, 'back': 2}
+    vectors = {'north': (0, 1), 'east': (1, 0), 'south': (0, -1), 'west': (-1, 0)}
+    for _ in range(10000):
+        start_heading = rng.below(4)
+        heading = start_heading
+        steps = [commands[rng.below(4)] for _ in range(8 + rng.below(5))]
+        x = y = 0
+        visited_directions = set()
+        for step in steps:
+            heading = (heading + rotations[step]) % 4
+            direction = _DIRECTIONS[heading]
+            visited_directions.add(direction)
+            dx, dy = vectors[direction]
+            x, y = x + dx, y + dy
+        direction = ('east' if x > 0 else 'west') if x and not y else (
+            ('north' if y > 0 else 'south') if y and not x else None)
+        if direction == target and len(visited_directions) == 4:
+            return _probe(f'v3_spatial_walk_{index + 1}', 'spatial_reasoning', 'challenge',
+                {'initial_heading': _DIRECTIONS[start_heading], 'steps': steps,
+                 'rules': 'Перед каждым шагом поверните относительно текущего направления: '
+                          'left на 90° влево, right на 90° вправо, back на 180°, '
+                          'forward без поворота; затем пройдите одну клетку вперёд. '
+                          'Север, восток, юг и запад постоянны.'},
+                'В каком направлении от начальной точки находится конечная? '
+                'Ответьте одним из north, east, south, west.', direction)
+    raise RuntimeError('could not generate nontrivial relative walk')
+
+
+def _v3_route(seed: str, index: int, target: str, first_edge_rank: int) -> dict[str, Any]:
+    """Independent cyclic map with a unique minimum-cost 8–12 edge route."""
+    import heapq
+
+    rng = _v3_rng(seed, f'route:{index}')
+    side = 7
+    positions = [(x, y) for y in range(side) for x in range(side)]
+    for _ in range(1000):
+        edges: dict[tuple[int, int], dict[str, tuple[tuple[int, int], int]]] = {p: {} for p in positions}
+        visited = {positions[0]}
+        stack = [positions[0]]
+        while stack:
+            x, y = stack[-1]
+            candidates = [(d, (x + dx, y + dy)) for d, (dx, dy) in _VECTORS.items()
+                          if (x + dx, y + dy) in edges and (x + dx, y + dy) not in visited]
+            if not candidates:
+                stack.pop()
+                continue
+            direction, other = candidates[rng.below(len(candidates))]
+            cost = 1 + rng.below(9)
+            edges[(x, y)][direction] = (other, cost)
+            edges[other][_OPPOSITE[direction]] = ((x, y), cost)
+            visited.add(other)
+            stack.append(other)
+        remaining = [(p, d, (p[0] + dx, p[1] + dy))
+                     for p in positions for d, (dx, dy) in _VECTORS.items()
+                     if d in ('east', 'south') and (p[0] + dx, p[1] + dy) in edges and d not in edges[p]]
+        rng.shuffle(remaining)
+        for p, direction, other in remaining[:max(2, len(remaining) // 3)]:
+            cost = 1 + rng.below(9)
+            edges[p][direction] = (other, cost)
+            edges[other][_OPPOSITE[direction]] = (p, cost)
+        choices = []
+        for start in positions:
+            if len(edges[start]) != 4 or len({edge[1] for edge in edges[start].values()}) != 4:
+                continue
+            ranked = sorted(edges[start], key=lambda direction: (edges[start][direction][1], direction))
+            if ranked.index(target) != first_edge_rank:
+                continue
+            distances, counts, routes = {start: 0}, {start: 1}, {start: []}
+            queue = [(0, start)]
+            while queue:
+                cost, room = heapq.heappop(queue)
+                if cost != distances[room]:
+                    continue
+                for direction, (nxt, weight) in edges[room].items():
+                    new = cost + weight
+                    if new < distances.get(nxt, float('inf')):
+                        distances[nxt], counts[nxt] = new, counts[room]
+                        routes[nxt] = routes[room] + [direction]
+                        heapq.heappush(queue, (new, nxt))
+                    elif new == distances.get(nxt):
+                        counts[nxt] = min(2, counts[nxt] + counts[room])
+            choices.extend((start, end, routes[end]) for end in positions
+                           if end != start and counts.get(end) == 1
+                           and 8 <= len(routes[end]) <= 12 and routes[end][0] == target)
+        if choices:
+            start, end, _ = choices[rng.below(len(choices))]
+            labels = list(_ROOM_NAMES) + [f'Локация {i:02d}' for i in range(1, 34)]
+            rng.shuffle(labels)
+            names = {p: labels[i] for i, p in enumerate(positions)}
+            rooms = [{'room': names[p], 'exits': {d: {'room': names[nxt], 'cost': cost}
+                       for d, (nxt, cost) in edges[p].items()}} for p in positions]
+            rng.shuffle(rooms)
+            return _probe(f'v3_spatial_route_{index + 1}', 'spatial_reasoning', 'challenge',
+                {'observed_map': rooms, 'rules': 'Указаны все проходы; каждый обратим и доступен. '
+                                                'Стоимость каждого прохода положительна.'},
+                f'Вы находитесь в «{names[start]}». Какой первый выход ведёт в «{names[end]}» '
+                'путём с наименьшей суммарной стоимостью? '
+                'Ответьте одним из north, east, south, west.', target)
+    raise RuntimeError('could not generate long unique route for requested direction')
+
+
+def _v3_quest(seed: str, index: int) -> dict[str, Any]:
+    """Follow a queried item through four swaps and eight distractor swaps."""
+    rng = _v3_rng(seed, f'quest:{index}')
+    people, items = list(_PEOPLE), list(_ITEMS)
+    rng.shuffle(people)
+    rng.shuffle(items)
+    holdings = dict(zip(people, items))
+    initial = [{'person': person, 'item': holdings[person]} for person in people]
+    rng.shuffle(initial)
+    tracked_item = items[rng.below(len(items))]
+    schedule = [True] * 4 + [False] * 8
+    rng.shuffle(schedule)
+    events = []
+    for tracks in schedule:
+        owner = next(p for p in people if holdings[p] == tracked_item)
+        if tracks:
+            other = [p for p in people if p != owner]
+            left, right = owner, other[rng.below(len(other))]
+        else:
+            other = [p for p in people if p != owner]
+            left = other.pop(rng.below(len(other)))
+            right = other[rng.below(len(other))]
+        if rng.below(2):
+            left, right = right, left
+        events.append({'action': 'swap', 'people': [left, right]})
+        holdings[left], holdings[right] = holdings[right], holdings[left]
+    owner = next(p for p in people if holdings[p] == tracked_item)
+    if index % 2:
+        question = f'Какой предмет находится у персонажа {owner} после всех обменов? Ответьте только названием предмета.'
+        answer = tracked_item
+    else:
+        question = f'У кого находится {tracked_item} после всех обменов? Ответьте только именем персонажа.'
+        answer = owner
+    return _probe(f'v3_quest_swaps_{index + 1}', 'quest_memory', 'challenge',
+                  {'initial_assignments': initial, 'events': events,
+                   'rules': 'У каждого персонажа ровно один предмет. Каждый swap одновременно меняет '
+                            'предметы указанных двух персонажей местами. Выполняйте обмены строго по порядку.'},
+                  question, answer)
+
+
+def generate_suite_v3(seed: str | int) -> list[dict[str, Any]]:
+    """Generate an opt-in, independently-state-sampled challenge suite.
+
+    Four relative walks, four 49-room weighted maps, and four quest histories
+    use separate random streams. Walks and optimal routes have 8–12 transitions;
+    direction answers are balanced per task family. Quest histories contain
+    twelve dependent swaps. All questions are independent model requests; the
+    four-per-seed structure is still clustered and must be analyzed by seed.
+    Record FIXED_PROBES_V3, keep fresh held-out seeds private, strip answers
+    with public_probe, and never combine scores with earlier protocol versions.
+    """
+    if not isinstance(seed, (str, int)) or isinstance(seed, bool):
+        raise ValueError('seed must be a string or integer')
+    value = str(seed)
+    walks, routes = list(_DIRECTIONS), list(_DIRECTIONS)
+    _v3_rng(value, 'walk:answer-order').shuffle(walks)
+    _v3_rng(value, 'route:answer-order').shuffle(routes)
+    ranks = list(range(4))
+    _v3_rng(value, 'route:first-edge-rank-order').shuffle(ranks)
+    return [*(_v3_walk(value, i, direction) for i, direction in enumerate(walks)),
+            *(_v3_route(value, i, direction, ranks[i]) for i, direction in enumerate(routes)),
+            *(_v3_quest(value, i) for i in range(4))]

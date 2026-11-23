@@ -1,0 +1,37 @@
+{
+  "version": "balanced-short-memory-0.1.0",
+  "fingerprint": "7450517f158b2da793cc79e15bc2412cae805f9a94ec70dde844a713bfda9c59",
+  "seed_set": "public-balanced-short-audit-0..9999",
+  "worlds": 10000,
+  "groups": {
+    "s4": {
+      "first_candidate": 1692,
+      "initial_owner": 2699,
+      "last_pair_contains_owner": 3302,
+      "penultimate_pair_contains_owner": 3333,
+      "most_active_person": 1667,
+      "tracker_correct": 10000
+    },
+    "s6": {
+      "first_candidate": 1673,
+      "initial_owner": 2055,
+      "last_pair_contains_owner": 3323,
+      "penultimate_pair_contains_owner": 3287,
+      "most_active_person": 1580,
+      "tracker_correct": 10000
+    },
+    "s8": {
+      "first_candidate": 1697,
+      "initial_owner": 1807,
+      "last_pair_contains_owner": 3343,
+      "penultimate_pair_contains_owner": 3270,
+      "most_active_person": 1703,
+      "tracker_correct": 10000
+    }
+  },
+  "paired_prefixes": {
+    "same_4_6": 4704,
+    "same_6_8": 4722
+  },
+  "note": "Development construction audit, no LLM; unconditioned target and exchanges. Statistical audit is not a proof against all shortcuts."
+}

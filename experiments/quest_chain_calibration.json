@@ -1,0 +1,99 @@
+{
+  "version": "quest-chains-0.1.0",
+  "source_sha256": "9a9473afe4b605c46263ae275ccff11cbde6adc85f61e728936494c53a5d5c30",
+  "development_seed_description": "integers 0..199",
+  "max_turns": 24,
+  "groups": [
+    {
+      "level": "short",
+      "strategy": "oracle",
+      "worlds": 200,
+      "completed": 200,
+      "optimal": 200,
+      "extra_turns": {
+        "0": 200
+      },
+      "invalid_actions": 0,
+      "oracle_min_turns": [
+        6
+      ]
+    },
+    {
+      "level": "short",
+      "strategy": "first_eligible",
+      "worlds": 200,
+      "completed": 200,
+      "optimal": 8,
+      "extra_turns": {
+        "0": 8,
+        "1": 49,
+        "2": 143
+      },
+      "invalid_actions": 0,
+      "oracle_min_turns": [
+        6
+      ]
+    },
+    {
+      "level": "medium",
+      "strategy": "oracle",
+      "worlds": 200,
+      "completed": 200,
+      "optimal": 200,
+      "extra_turns": {
+        "0": 200
+      },
+      "invalid_actions": 0,
+      "oracle_min_turns": [
+        8
+      ]
+    },
+    {
+      "level": "medium",
+      "strategy": "first_eligible",
+      "worlds": 200,
+      "completed": 200,
+      "optimal": 6,
+      "extra_turns": {
+        "0": 6,
+        "1": 38,
+        "2": 156
+      },
+      "invalid_actions": 0,
+      "oracle_min_turns": [
+        8
+      ]
+    },
+    {
+      "level": "long",
+      "strategy": "oracle",
+      "worlds": 200,
+      "completed": 200,
+      "optimal": 200,
+      "extra_turns": {
+        "0": 200
+      },
+      "invalid_actions": 0,
+      "oracle_min_turns": [
+        10
+      ]
+    },
+    {
+      "level": "long",
+      "strategy": "first_eligible",
+      "worlds": 200,
+      "completed": 200,
+      "optimal": 5,
+      "extra_turns": {
+        "0": 5,
+        "1": 36,
+        "2": 159
+      },
+      "invalid_actions": 0,
+      "oracle_min_turns": [
+        10
+      ]
+    }
+  ],
+  "note": "Development environment controls, not LLM accuracy or a hidden evaluation."
+}

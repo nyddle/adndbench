@@ -1,0 +1,78 @@
+{
+  "groups": [
+    {
+      "invalid_actions": 0,
+      "level": "medium",
+      "max_turns": 112,
+      "outcomes": {
+        "completed": 100
+      },
+      "policy": "oracle",
+      "worlds": 100
+    },
+    {
+      "invalid_actions": 0,
+      "level": "medium",
+      "max_turns": 95,
+      "outcomes": {
+        "completed": 13,
+        "dead_end": 87
+      },
+      "policy": "first_eligible",
+      "worlds": 100
+    },
+    {
+      "invalid_actions": 0,
+      "level": "hard",
+      "max_turns": 159,
+      "outcomes": {
+        "completed": 100
+      },
+      "policy": "oracle",
+      "worlds": 100
+    },
+    {
+      "invalid_actions": 0,
+      "level": "hard",
+      "max_turns": 113,
+      "outcomes": {
+        "completed": 3,
+        "dead_end": 97
+      },
+      "policy": "first_eligible",
+      "worlds": 100
+    },
+    {
+      "invalid_actions": 0,
+      "level": "extreme",
+      "max_turns": 228,
+      "outcomes": {
+        "completed": 100
+      },
+      "policy": "oracle",
+      "worlds": 100
+    },
+    {
+      "invalid_actions": 0,
+      "level": "extreme",
+      "max_turns": 151,
+      "outcomes": {
+        "dead_end": 100
+      },
+      "policy": "first_eligible",
+      "worlds": 100
+    }
+  ],
+  "note": "Local privileged map/code controls. Not LLM results. Different levels generate different worlds.",
+  "protocol": "radical-adventure-0.1.0",
+  "seed_set": "public radical-adventure-dev-0..99",
+  "settings": {
+    "combat": "medium",
+    "max_turns": 300,
+    "memory": "medium",
+    "navigation": "hard",
+    "party": false
+  },
+  "source_sha256": "a7ac81f7cb2748282237d068c7b32e0d167e08271bc1bdad08cec9d5c20537a4",
+  "worlds_per_group": 100
+}

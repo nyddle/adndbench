@@ -1,0 +1,69 @@
+{
+  "groups": [
+    {
+      "completed": 200,
+      "invalid_actions": 0,
+      "level": "medium",
+      "max_turns": 15,
+      "oracle_min_turns": 11,
+      "policy": "oracle",
+      "turn_limit": 0,
+      "worlds": 200
+    },
+    {
+      "completed": 32,
+      "invalid_actions": 1080,
+      "level": "medium",
+      "max_turns": 15,
+      "oracle_min_turns": 11,
+      "policy": "first_eligible",
+      "turn_limit": 168,
+      "worlds": 200
+    },
+    {
+      "completed": 200,
+      "invalid_actions": 0,
+      "level": "hard",
+      "max_turns": 24,
+      "oracle_min_turns": 19,
+      "policy": "oracle",
+      "turn_limit": 0,
+      "worlds": 200
+    },
+    {
+      "completed": 8,
+      "invalid_actions": 1534,
+      "level": "hard",
+      "max_turns": 24,
+      "oracle_min_turns": 19,
+      "policy": "first_eligible",
+      "turn_limit": 192,
+      "worlds": 200
+    },
+    {
+      "completed": 200,
+      "invalid_actions": 0,
+      "level": "extreme",
+      "max_turns": 35,
+      "oracle_min_turns": 29,
+      "policy": "oracle",
+      "turn_limit": 0,
+      "worlds": 200
+    },
+    {
+      "completed": 3,
+      "invalid_actions": 1908,
+      "level": "extreme",
+      "max_turns": 35,
+      "oracle_min_turns": 29,
+      "policy": "first_eligible",
+      "turn_limit": 197,
+      "worlds": 200
+    }
+  ],
+  "note": "Local development controls, not an evaluation of models.",
+  "protocol": "quest-trial-0.1.0",
+  "seed_set": "public quest-trial-dev-0..199",
+  "source_sha256": "4658a38f2a97210e929d7650dd2c31b9753a9b64677daa325595338e5d257652",
+  "worlds_per_group": 200
+}
