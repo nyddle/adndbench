@@ -14,6 +14,7 @@ from typing import Any, Iterable, Mapping
 
 COMBAT_VERSION = "combat-1"
 DIFFICULTY_COUNTS = {"easy": 2, "medium": 4, "hard": 6}
+_DIFFICULTY_BONUS = {"easy": 0, "medium": 1, "hard": 2}
 ENEMIES = {
     "raider": {"name": "разбойник", "hp": 6},
     "sentinel": {"name": "бронированный страж", "hp": 8},
@@ -57,48 +58,68 @@ COMBAT_RULES = (
     "убитый враг не отвечает. После каждого ответа враг переходит к следующей фазе. "
     "Защита снижает ответный урон до не более 1 и усиливает следующую обычную атаку; "
     "если намерение не наносит урон, защита также стоит 0 HP. "
-    "Страж в фазе блока ограничивает физический урон до 1, но не огненный; "
-    "огненный оберег снижает только дыхание дракона на 2."
+    "Страж в фазе блока ограничивает физический урон; огненная устойчивость "
+    "и размер каждого ограничения указаны в текущем намерении. "
+    "рунический оберег снижает только дыхание дракона на 2."
 )
 
 
-def _phase(kind: str, phase: int) -> dict[str, Any]:
+def _phase(kind: str, phase: int, difficulty: str = "easy") -> dict[str, Any]:
     if kind not in _PHASES:
         raise ValueError(f"unknown enemy kind: {kind}")
     if not isinstance(phase, int) or isinstance(phase, bool) or phase < 0:
         raise ValueError("phase must be a non-negative integer")
+    if not isinstance(difficulty, str) or difficulty not in DIFFICULTY_COUNTS:
+        raise ValueError("difficulty must be easy, medium, or hard")
     phases = _PHASES[kind]
-    return phases[phase % len(phases)]
+    state = dict(phases[phase % len(phases)])
+    state["damage"] += _DIFFICULTY_BONUS[difficulty]
+    state["fire_cap"] = None
+    if kind == "sentinel" and state["id"] == "guard":
+        # Harder shields change the tactical choice, not just enemy HP.
+        state["fire_cap"] = {"easy": None, "medium": 2, "hard": 1}[difficulty]
+    if difficulty != "easy":
+        if state["fire_cap"] is not None:
+            resistance = f"; физический урон не более {state['cap']}, огненный не более {state['fire_cap']}"
+        else:
+            resistance = ""
+        ward = "; оберег снижает урон дыхания на 2" if kind == "dragon" and state["id"] == "breath" else ""
+        state["description"] = (f"{ENEMIES[kind]['name']}: {state['name']}; "
+                                f"ответ — {state['damage']} урона{resistance}{ward}.")
+    return state
 
 
-def incoming(kind: str, phase: int, *, ward: bool = False, defending: bool = False) -> int:
+def incoming(kind: str, phase: int, *, ward: bool = False, defending: bool = False,
+             difficulty: str = "easy") -> int:
     """HP lost from one response, if this enemy survives the player's action."""
-    state = _phase(kind, phase)
+    state = _phase(kind, phase, difficulty)
     damage = state["damage"]
     if ward and kind == "dragon" and state["id"] == "breath":
         damage = max(0, damage - 2)
     return min(damage, 1) if defending else damage
 
 
-def apply_hit(kind: str, phase: int, damage: int, *, damage_type: str = "physical") -> int:
+def apply_hit(kind: str, phase: int, damage: int, *, damage_type: str = "physical",
+              difficulty: str = "easy") -> int:
     """Return actual enemy HP damage after phase resistance, without mutation."""
-    state = _phase(kind, phase)
+    state = _phase(kind, phase, difficulty)
     if not isinstance(damage, int) or isinstance(damage, bool) or damage < 0:
         raise ValueError("damage must be a non-negative integer")
     if damage_type not in ("physical", "fire"):
         raise ValueError("damage_type must be physical or fire")
-    cap = state["cap"]
-    return min(damage, cap) if cap is not None and damage_type == "physical" else damage
+    cap = state["cap"] if damage_type == "physical" else state["fire_cap"]
+    return min(damage, cap) if cap is not None else damage
 
 
-def intent(kind: str, phase: int, *, ward: bool = False) -> dict[str, Any]:
+def intent(kind: str, phase: int, *, ward: bool = False, difficulty: str = "easy") -> dict[str, Any]:
     """Return the CURRENT public, actionable intent; no future phase or map data."""
-    state = _phase(kind, phase)
+    state = _phase(kind, phase, difficulty)
     return {
         "id": state["id"], "name": state["name"], "description": state["description"],
-        "damage": incoming(kind, phase, ward=ward),
-        "damage_if_defending": incoming(kind, phase, ward=ward, defending=True),
+        "damage": incoming(kind, phase, ward=ward, difficulty=difficulty),
+        "damage_if_defending": incoming(kind, phase, ward=ward, defending=True, difficulty=difficulty),
         "physical_damage_cap": state["cap"],
+        "fire_damage_cap": state["fire_cap"],
     }
 
 
@@ -163,7 +184,7 @@ def generate_encounters(
     """
     if not isinstance(seed, (int, str)) or isinstance(seed, bool):
         raise ValueError("seed must be a string or integer")
-    if difficulty not in DIFFICULTY_COUNTS:
+    if not isinstance(difficulty, str) or difficulty not in DIFFICULTY_COUNTS:
         raise ValueError("difficulty must be easy, medium, or hard")
     count = DIFFICULTY_COUNTS[difficulty] if extra_count is None else extra_count
     if not isinstance(count, int) or isinstance(count, bool) or count < 0:
@@ -183,7 +204,8 @@ def generate_encounters(
                         key=lambda room: (_rank(str(seed), "room:" + room), room))
     blocked: set[str] = set()
     encounters = {dragon: {"kind": "dragon", "name": ENEMIES["dragon"]["name"],
-                           "hp": ENEMIES["dragon"]["hp"], "phase": 0}}
+                           "hp": ENEMIES["dragon"]["hp"], "phase": 0,
+                           "difficulty": difficulty}}
     for room in candidates:
         if len(blocked) >= count:
             break
@@ -195,5 +217,6 @@ def generate_encounters(
         index = int(_rank(str(seed), "type:" + room), 16) % len(types)
         kind = types[index]
         encounters[room] = {"kind": kind, "name": ENEMIES[kind]["name"],
-                            "hp": ENEMIES[kind]["hp"], "phase": 0}
+                            "hp": ENEMIES[kind]["hp"], "phase": 0,
+                            "difficulty": difficulty}
     return encounters
