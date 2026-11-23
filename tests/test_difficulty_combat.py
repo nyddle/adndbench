@@ -49,8 +49,12 @@ class EncounterPlacementTests(unittest.TestCase):
         hard = generate_encounters(42, world, 'hard')
         self.assertEqual(world, original)
         self.assertEqual((len(easy), len(medium), len(hard)), (3, 5, 7))
-        self.assertTrue(easy.items() <= medium.items())
-        self.assertTrue(medium.items() <= hard.items())
+        self.assertTrue(easy.keys() <= medium.keys())
+        self.assertTrue(medium.keys() <= hard.keys())
+        for room in easy:
+            self.assertEqual(easy[room]['kind'], medium[room]['kind'])
+        for room in medium:
+            self.assertEqual(medium[room]['kind'], hard[room]['kind'])
         self.assertEqual(hard, generate_encounters('42', world, 'hard'))
         self.assertNotEqual(hard, generate_encounters(43, world, 'hard'))
         self.assertEqual(hard[world['sites']['dragon']]['kind'], 'dragon')
@@ -71,6 +75,22 @@ class EncounterPlacementTests(unittest.TestCase):
         self.assertLess(len(encounters) - 1, 500)
         blocked = set(encounters) - {world['sites']['dragon']}
         self.assertTrue(set(world['sites'].values()) <= reachable(world, blocked))
+
+    def test_fixed_count_profiles_keep_locations_but_change_tactics(self):
+        world = grid_world()
+        cases = {level: generate_encounters(10, world, level, extra_count=3)
+                 for level in ('easy', 'medium', 'hard')}
+        self.assertEqual([len(cases[level]) for level in cases], [4, 4, 4])
+        self.assertEqual(set(cases['easy']), set(cases['medium']))
+        self.assertEqual(set(cases['easy']), set(cases['hard']))
+        for room in cases['easy']:
+            kind = cases['easy'][room]['kind']
+            self.assertEqual(kind, cases['medium'][room]['kind'])
+            self.assertEqual(kind, cases['hard'][room]['kind'])
+            for level in cases:
+                self.assertEqual(cases[level][room]['difficulty'], level)
+            damages = [incoming(kind, 0, difficulty=level) for level in cases]
+            self.assertEqual(damages, sorted(set(damages)))
 
     def test_replay_is_independent_of_python_hash_seed(self):
         program = '''
@@ -120,8 +140,25 @@ class EnemyIntentTests(unittest.TestCase):
         self.assertEqual((incoming('sentinel', 1), incoming('sentinel', 1, defending=True)), (4, 1))
         self.assertEqual(ENEMIES['dragon']['hp'], 16)
 
+    def test_profiles_telegraph_matching_resistance_and_damage(self):
+        expected_fire_caps = {'easy': None, 'medium': 2, 'hard': 1}
+        for level, cap in expected_fire_caps.items():
+            with self.subTest(level=level):
+                guard = intent('sentinel', 0, difficulty=level)
+                self.assertEqual(guard['fire_damage_cap'], cap)
+                if cap is not None:
+                    self.assertIn(f'огненный не более {cap}', guard['description'])
+                self.assertEqual(apply_hit('sentinel', 0, 7, damage_type='fire', difficulty=level),
+                                 7 if cap is None else cap)
+                self.assertEqual(guard['damage'], incoming('sentinel', 0, difficulty=level))
+                self.assertEqual(guard['damage_if_defending'], incoming('sentinel', 0, defending=True, difficulty=level))
+                dragon = intent('dragon', 0, ward=True, difficulty=level)
+                self.assertEqual(dragon['damage'], incoming('dragon', 0, ward=True, difficulty=level))
+                self.assertEqual(dragon['damage'], 4 + ('easy', 'medium', 'hard').index(level))
+                self.assertEqual(dragon['damage_if_defending'], 1)
+
     def test_input_validation(self):
-        for fn in (lambda: intent('unknown', 0), lambda: intent('dragon', -1),
+        for fn in (lambda: intent('unknown', 0), lambda: intent('dragon', -1), lambda: intent('dragon', 0, difficulty='bad'),
                    lambda: apply_hit('dragon', 0, -1), lambda: apply_hit('dragon', 0, 2, damage_type='poison')):
             with self.assertRaises(ValueError):
                 fn()
