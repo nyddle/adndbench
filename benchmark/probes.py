@@ -1,0 +1,130 @@
+"""Recall probes derived only from observations and successful movements.
+
+Answers are evaluator-only. Never send a probe dictionary as-is to an agent;
+use ``public_probe`` to remove the answer. These questions test the information
+that was actually shown, not details from the private generated world.
+"""
+from __future__ import annotations
+
+import json
+import re
+import unicodedata
+from typing import Any, Mapping, Sequence
+
+_QUEST = re.compile(
+    r"^(?P<giver>[^:]+): найдите (?P<item>.+?) в месте «(?P<room>.+?)» "
+    r"и принесите мне сюда, в «.+?»\. Я не повторю поручение\.$"
+)
+
+
+def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[str, Any],
+                 *, max_per_capability: int = 3) -> list[dict[str, str]]:
+    """Build deterministic, answerable questions from the agent's visible trace.
+
+    ``trace`` is a sequence of {observation, action}; ``final_observation`` is
+    the observation after the last action. No world internals are read. A quest
+    still displayed in the last observation is excluded, so its answer is not
+    accidentally supplied alongside the question. Fewer (or zero) questions are
+    produced if the episode contains insufficient evidence.
+    """
+    if not isinstance(max_per_capability, int) or isinstance(max_per_capability, bool) or max_per_capability < 0:
+        raise ValueError("max_per_capability must be a non-negative integer")
+    probes: list[dict[str, str]] = []
+    seen_quests: set[tuple[str, str]] = set()
+    seen_edges: set[tuple[str, str]] = set()
+    memory_count = navigation_count = reasoning_count = 0
+    seen_pairs: set[tuple[str, str]] = set()
+    # Successful observed movement only; never use private world coordinates.
+    path: list[tuple[str, str, str]] = []
+    vectors = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
+    final_text = json.dumps(final_observation, ensure_ascii=False, sort_keys=True).casefold()
+    for index, turn in enumerate(trace):
+        obs = turn.get("observation", {})
+        if not isinstance(obs, Mapping):
+            continue
+        if path and obs.get("room") != path[-1][1]:
+            path.clear()
+        message = obs.get("message")
+        if isinstance(message, str) and message != final_observation.get("message"):
+            match = _QUEST.fullmatch(message)
+            if match:
+                giver, item, location = match.group("giver", "item", "room")
+                quest_key = (giver, item)
+                if (quest_key not in seen_quests and memory_count < max_per_capability
+                        and location.casefold() not in final_text):
+                    seen_quests.add(quest_key)
+                    memory_count += 1
+                    probes.append({
+                        "id": f"quest_memory_{memory_count}",
+                        "capability": "quest_memory",
+                        "question": f"В каком месте {giver} попросил найти {item}? Ответьте только названием места.",
+                        "answer": location,
+                    })
+        action = turn.get("action")
+        if not isinstance(action, Mapping) or action.get("type") != "move":
+            continue
+        following = (trace[index + 1].get("observation", {})
+                     if index + 1 < len(trace) else final_observation)
+        if not isinstance(following, Mapping):
+            continue
+        origin, direction, destination = obs.get("room"), action.get("direction"), following.get("room")
+        if not all(isinstance(v, str) and v for v in (origin, direction, destination)):
+            continue
+        if origin == destination:
+            continue
+        if direction not in vectors or direction not in obs.get("exits", []):
+            path.clear()
+            continue
+        path.append((origin, destination, direction))
+        # Every candidate spans at least two successful moves. Sum the visible
+        # directions, which handles turns and cancellation without hidden data.
+        dx = dy = 0
+        for length, (start, _, step_direction) in enumerate(reversed(path), 1):
+            vx, vy = vectors[step_direction]
+            dx += vx
+            dy += vy
+            pair = (start, destination)
+            if length < 2 or reasoning_count >= max_per_capability or pair in seen_pairs:
+                continue
+            if (dx == 0) == (dy == 0) or start == destination:
+                continue
+            answer = ("east" if dx > 0 else "west") if dx else ("south" if dy > 0 else "north")
+            seen_pairs.add(pair)
+            reasoning_count += 1
+            probes.append({
+                "id": f"spatial_reasoning_{reasoning_count}",
+                "capability": "spatial_reasoning",
+                "question": (f"В каком направлении расположена комната «{destination}» "
+                             f"относительно комнаты «{start}»? Ответьте одним направлением на английском."),
+                "answer": answer,
+            })
+        edge = (origin, direction)
+        if (edge in seen_edges or navigation_count >= max_per_capability
+                or destination.casefold() in final_text):
+            continue
+        seen_edges.add(edge)
+        navigation_count += 1
+        probes.append({
+            "id": f"navigation_recall_{navigation_count}",
+            "capability": "navigation_recall",
+            "question": (f"В какую комнату вы попадали, выйдя из «{origin}» в направлении "
+                         f"{direction}? Ответьте только названием комнаты."),
+            "answer": destination,
+        })
+    return probes
+
+
+def public_probe(probe: Mapping[str, str]) -> dict[str, str]:
+    """Return the only fields permitted in the model-facing question."""
+    return {"id": probe["id"], "question": probe["question"]}
+
+
+def _normalize(value: str) -> str:
+    value = unicodedata.normalize("NFKC", value).casefold().strip()
+    value = value.strip(' \t\r\n"\'«»„“”.,!?;:')
+    return " ".join(value.split())
+
+
+def check_answer(probe: Mapping[str, str], answer: Any) -> bool:
+    """Check an exact answer, allowing harmless case, whitespace and quoting."""
+    return isinstance(answer, str) and _normalize(answer) == _normalize(probe["answer"])
