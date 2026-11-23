@@ -119,13 +119,15 @@ class OpenAICompatibleAgent:
 
     def __init__(self, model: str, api_url: str, api_key: str, *,
                  temperature: float = 0, context_turns: int | None = None,
-                 timeout: float = 90) -> None:
+                 timeout: float = 90, system_prompt: str | None = None) -> None:
         if not api_key:
             raise ValueError("Set OPENAI_API_KEY in the environment")
         if context_turns is not None and context_turns < 1:
             raise ValueError("context_turns must be at least 1")
         self.model, self.api_url, self.api_key = model, api_url, api_key
         self.temperature, self.context_turns, self.timeout = temperature, context_turns, timeout
+        self._system_prompt_explicit = system_prompt is not None
+        self.system_prompt = SYSTEM_PROMPT if system_prompt is None else system_prompt
         self.history: list[dict[str, str]] = []
         self.last_response: str | None = None
 
@@ -152,7 +154,7 @@ class OpenAICompatibleAgent:
     def _messages(self, history: list[dict[str, str]]) -> list[dict[str, str]]:
         if self.context_turns is not None:
             history = history[-(2 * self.context_turns - 1):]
-        return [{"role": "system", "content": SYSTEM_PROMPT}, *history]
+        return [{"role": "system", "content": self.system_prompt}, *history]
 
     def act(self, obs: dict[str, Any]) -> dict[str, Any]:
         self.history.append({"role": "user", "content": json.dumps(obs, ensure_ascii=False, sort_keys=True)})
@@ -183,9 +185,19 @@ class OpenAICompatibleAgent:
         return None
 
 
-def run_episode(seed: int, agent: Any, max_turns: int = 120, *, probes: bool = True) -> dict[str, Any]:
+def run_episode(seed: int, agent: Any, max_turns: int | None = None, *,
+                probes: bool = True, scenario: str = "classic") -> dict[str, Any]:
     """Return a local trace and outcomes; never pass hidden game state to agent."""
-    game = Game(seed, max_turns=max_turns)
+    if scenario == "classic":
+        game = Game(seed, max_turns=120 if max_turns is None else max_turns)
+        scenario_prompt = SYSTEM_PROMPT
+    elif scenario == "realms":
+        from benchmark.realms import DEFAULT_MAX_TURNS, Game as RealmsGame, SYSTEM_PROMPT as scenario_prompt
+        game = RealmsGame(seed, max_turns=DEFAULT_MAX_TURNS if max_turns is None else max_turns)
+    else:
+        raise ValueError(f"Unknown scenario: {scenario}")
+    if isinstance(agent, OpenAICompatibleAgent) and not agent._system_prompt_explicit:
+        agent.system_prompt = scenario_prompt
     obs = game.observe()
     trace = []
     while not obs.get("done", False):
@@ -199,7 +211,7 @@ def run_episode(seed: int, agent: Any, max_turns: int = 120, *, probes: bool = T
     evaluated_probes = []
     if probes and hasattr(agent, "answer_probe"):
         counts: dict[str, dict[str, int]] = {}
-        for probe in build_probes(trace, obs):
+        for probe in build_probes(trace, obs, scenario=scenario):
             answer = agent.answer_probe(obs, public_probe(probe))
             correct = check_answer(probe, answer)
             count = counts.setdefault(probe["capability"], {"correct": 0, "total": 0})
@@ -207,7 +219,7 @@ def run_episode(seed: int, agent: Any, max_turns: int = 120, *, probes: bool = T
             count["correct"] += int(correct)
             evaluated_probes.append({**probe, "model_answer": answer, "correct": correct})
         result["probe_results"] = counts
-    return {"seed": seed, "score": score(result), "trace": trace,
+    return {"seed": seed, "scenario": scenario, "score": score(result), "trace": trace,
             "final_observation": obs, "result": result, "probes": evaluated_probes}
 
 
@@ -234,14 +246,28 @@ def aggregate_runs(runs: list[dict[str, Any]]) -> dict[str, Any]:
                 values.append(value)
         aggregate[name] = {"mean": sum(values) / len(values) if values else None,
                            "seeds_with_data": len(values)}
+    # A side quest is optional in realms, so total quest completion is not the
+    # success rate for the main objective. Exclude unknown/unfinished results.
+    main_values = []
+    for run in runs:
+        value = run.get("score", {}).get("outcomes", {}).get("quests", {}).get("main_completed")
+        if isinstance(value, bool):
+            main_values.append(int(value))
+    if main_values:
+        aggregate["main_quest_success"] = {
+            "mean": sum(main_values) / len(main_values),
+            "seeds_with_data": len(main_values),
+        }
     return aggregate
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate an agent on deterministic fantasy adventures")
     parser.add_argument("--agent", choices=("baseline", "openai"), default="baseline")
+    parser.add_argument("--scenario", choices=("classic", "realms"), default="classic",
+                        help="Scenario to run (default: classic)")
     parser.add_argument("--seeds", type=int, nargs="+", default=[1, 2, 3])
-    parser.add_argument("--max-turns", type=int, default=120)
+    parser.add_argument("--max-turns", type=int, help="Override scenario turn limit (classic: 120; realms: 300)")
     parser.add_argument("--model", help="Model name for the OpenAI-compatible chat-completions API")
     parser.add_argument("--api-url", default=os.getenv("OPENAI_API_URL", "https://api.openai.com/v1/chat/completions"), help="Complete chat-completions endpoint URL")
     parser.add_argument("--temperature", type=float, default=0)
@@ -252,23 +278,34 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if len(set(args.seeds)) != len(args.seeds):
         parser.error("--seeds must not contain duplicates")
-    if args.max_turns < 1 or args.timeout <= 0:
+    if (args.max_turns is not None and args.max_turns < 1) or args.timeout <= 0:
         parser.error("--max-turns and --timeout must be positive")
     if args.context_turns is not None and args.context_turns < 1:
         parser.error("--context-turns must be positive")
     if args.agent == "openai" and not args.model:
         parser.error("--model is required with --agent openai")
+    if args.scenario == "realms":
+        from benchmark.realms import DEFAULT_MAX_TURNS, ENGINE_VERSION as scenario_version, SYSTEM_PROMPT as scenario_prompt
+        max_turns = DEFAULT_MAX_TURNS if args.max_turns is None else args.max_turns
+    else:
+        scenario_version, scenario_prompt = ENGINE_VERSION, SYSTEM_PROMPT
+        max_turns = 120 if args.max_turns is None else args.max_turns
     runs = []
     try:
         for seed in args.seeds:
             if args.agent == "baseline":
-                agent = BaselineAgent()
+                if args.scenario == "realms":
+                    from benchmark.realms_baseline import RealmsBaselineAgent
+                    agent = RealmsBaselineAgent()
+                else:
+                    agent = BaselineAgent()
             else:
                 agent = OpenAICompatibleAgent(args.model, args.api_url,
                     os.getenv("OPENAI_API_KEY", ""), temperature=args.temperature,
-                    context_turns=args.context_turns, timeout=args.timeout)
-            runs.append(run_episode(seed, agent, max_turns=args.max_turns, probes=not args.no_probes))
-        report = {"engine_version": ENGINE_VERSION, "max_turns": args.max_turns,
+                    context_turns=args.context_turns, timeout=args.timeout,
+                    system_prompt=scenario_prompt)
+            runs.append(run_episode(seed, agent, max_turns=max_turns, probes=not args.no_probes, scenario=args.scenario))
+        report = {"engine_version": scenario_version, "scenario": args.scenario, "max_turns": max_turns,
                   "aggregate": aggregate_runs(runs),
                   "agent": args.agent, "model": args.model if args.agent == "openai" else None,
                   "temperature": args.temperature if args.agent == "openai" else None,

@@ -69,15 +69,26 @@ def score(result: Mapping[str, Any]) -> dict[str, Any]:
         probe_counts[category] = (
             {"correct": correct, "total": total} if rate is not None else None
         )
+    quests = {
+        "completed": completed,
+        "total": total_quests,
+        "completion_rate": _fraction(completed, total_quests),
+    }
+    if "main_quest_completed" in result:
+        main_completed = result.get("main_quest_completed")
+        side_completed = result.get("side_quests_completed")
+        side_total = result.get("side_quests_total")
+        quests.update({
+            "main_completed": main_completed if isinstance(main_completed, bool) else None,
+            "side_completed": side_completed,
+            "side_total": side_total,
+            "side_completion_rate": _fraction(side_completed, side_total),
+        })
     return {
         "seed": result.get("seed"),
         "terminal_reason": result.get("terminal_reason"),
         "outcomes": {
-            "quests": {
-                "completed": completed,
-                "total": total_quests,
-                "completion_rate": _fraction(completed, total_quests),
-            },
+            "quests": quests,
             "exploration": {
                 "rooms_visited": visited,
                 "rooms_total": total_rooms,

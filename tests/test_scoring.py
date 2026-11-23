@@ -39,6 +39,15 @@ class ScoringTests(unittest.TestCase):
             self.assertIsNone(report["capability_scores"][category])
             self.assertIsNone(report["probe_counts"][category])
 
+    def test_main_quest_success_is_not_hidden_by_skipped_optional_quest(self):
+        report = score({"terminal_reason": "completed", "quests_completed": 1,
+                        "quests_total": 2, "main_quest_completed": True,
+                        "side_quests_completed": 0, "side_quests_total": 1})
+        quests = report["outcomes"]["quests"]
+        self.assertTrue(quests["main_completed"])
+        self.assertEqual(quests["side_completion_rate"], 0)
+        self.assertEqual(quests["completion_rate"], 0.5)
+
 
 if __name__ == "__main__":
     unittest.main()

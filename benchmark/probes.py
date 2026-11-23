@@ -15,18 +15,27 @@ _QUEST = re.compile(
     r"^(?P<giver>[^:]+): найдите (?P<item>.+?) в месте «(?P<room>.+?)» "
     r"и принесите мне сюда, в «.+?»\. Я не повторю поручение\.$"
 )
+_REALMS_QUEST = re.compile(
+    r"^(?P<giver>[^:]+): найдите (?P<item>.+?) в месте «(?P<room>.+?)» "
+    r"и принесите мне сюда, в «.+?»\."
+)
 
 
 def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[str, Any],
-                 *, max_per_capability: int = 3) -> list[dict[str, str]]:
+                 *, max_per_capability: int = 3,
+                 scenario: str = "classic") -> list[dict[str, str]]:
     """Build deterministic, answerable questions from the agent's visible trace.
 
     ``trace`` is a sequence of {observation, action}; ``final_observation`` is
     the observation after the last action. No world internals are read. A quest
     still displayed in the last observation is excluded, so its answer is not
     accidentally supplied alongside the question. Fewer (or zero) questions are
-    produced if the episode contains insufficient evidence.
+    produced if the episode contains insufficient evidence. For ``realms``,
+    compass displacements are only combined within the same observed zone;
+    stairs are still eligible for navigation recall.
     """
+    if scenario not in ("classic", "realms"):
+        raise ValueError("unknown scenario")
     if not isinstance(max_per_capability, int) or isinstance(max_per_capability, bool) or max_per_capability < 0:
         raise ValueError("max_per_capability must be a non-negative integer")
     probes: list[dict[str, str]] = []
@@ -46,7 +55,8 @@ def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[
             path.clear()
         message = obs.get("message")
         if isinstance(message, str) and message != final_observation.get("message"):
-            match = _QUEST.fullmatch(message)
+            match = (_QUEST.fullmatch(message) if scenario == "classic"
+                     else _REALMS_QUEST.match(message))
             if match:
                 giver, item, location = match.group("giver", "item", "room")
                 quest_key = (giver, item)
@@ -72,10 +82,20 @@ def build_probes(trace: Sequence[Mapping[str, Any]], final_observation: Mapping[
             continue
         if origin == destination:
             continue
-        if direction not in vectors or direction not in obs.get("exits", []):
+        if direction not in obs.get("exits", []):
             path.clear()
             continue
-        path.append((origin, destination, direction))
+        # In realms, each zone has its own horizontal coordinate system.
+        # Stairs connect zones and must not be interpreted as horizontal
+        # displacement, even if subsequent room names happen to match.
+        horizontal = direction in vectors
+        same_zone = (scenario == "classic" or
+                     (isinstance(obs.get("zone"), str) and obs.get("zone")
+                      and obs.get("zone") == following.get("zone")))
+        if not horizontal or not same_zone:
+            path.clear()
+        else:
+            path.append((origin, destination, direction))
         # Every candidate spans at least two successful moves. Sum the visible
         # directions, which handles turns and cancellation without hidden data.
         dx = dy = 0
