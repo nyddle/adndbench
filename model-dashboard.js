@@ -29,6 +29,7 @@
   function episode(e,s) {
     const r = e.result || {};
     let outcome = e.status === 'completed' ? (outcomes[r.terminal_reason] || r.terminal_reason || 'Завершено') : (statuses[e.status] || 'Не завершена');
+    if (e.status === 'ready' && s.execution_note && s.execution_note.includes('остановлены при достижении бюджета')) outcome = 'Остановлена бюджетом';
     if (s.measurement === 'party_choice_feasible_by_oracle' && e.status === 'completed') outcome = r.terminal_reason === 'completed' ? 'Состав позволяет победить' : 'Победная стратегия не найдена';
     const b = battle(r,s);
     const metrics = [metric('Ходы',num(r.turns)), metric('Ошибки действий',num(r.invalid_actions))];
