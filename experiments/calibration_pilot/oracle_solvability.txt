@@ -1,8 +1,0 @@
-101 easy completed 57 0
-101 hard completed 102 0
-101 npconly completed 57 0
-101 combatonly completed 57 0
-102 easy completed 63 0
-102 hard completed 128 0
-102 npconly completed 63 0
-102 combatonly completed 63 0
