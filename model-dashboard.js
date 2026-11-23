@@ -70,6 +70,7 @@
     }
     if (s.measurement === 'party_choice_feasible_by_oracle') notes += ' · успех выбора = существование победной стратегии, а не сыгранный бой';
     if (s.axis === 'memory-compact') notes += ' · история доступна в контексте';
+    if (s.execution_note) notes += ` · ${s.execution_note}`;
     context.textContent = notes;
     cards.innerHTML = list.map(model => {
       const planned = s.episodes.filter(e => e.model === model);
