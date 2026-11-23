@@ -7,7 +7,7 @@ from benchmark.engine import Game
 from benchmark.probes import build_probes, check_answer
 
 root = Path(__file__).resolve().parent
-for model in ('strong', 'small'):
+for model in ('strong', 'small', 'luna6'):
     for seed in (1, 2, 3):
         name = f'{model}_seed{seed}'
         rows = [json.loads(line) for line in (root / f'{name}.jsonl').read_text(encoding='utf8').splitlines()]
