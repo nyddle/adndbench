@@ -1,0 +1,188 @@
+{
+  "seeds": "0..9999 inclusive",
+  "n": 10000,
+  "terminal_reasons": {
+    "completed": 9686,
+    "turn_limit": 314
+  },
+  "quest_counts": {
+    "3": 9686,
+    "2": 314
+  },
+  "completed_turns": {
+    "min": 44,
+    "p10": 71,
+    "median": 89.0,
+    "p90": 108,
+    "p95": 113,
+    "max": 120,
+    "mean": 88.8934544703696
+  },
+  "all_turns": {
+    "min": 44,
+    "p10": 71,
+    "median": 89.0,
+    "p90": 110,
+    "p95": 117,
+    "max": 120,
+    "mean": 89.8702
+  },
+  "damage_taken": {
+    "min": 6,
+    "p10": 8,
+    "median": 10.0,
+    "p90": 14,
+    "p95": 14,
+    "max": 14,
+    "mean": 10.6274
+  },
+  "invalid_actions_total": 0,
+  "invalid_action_seeds": 0,
+  "potions_used": {
+    "0": 6964,
+    "1": 3036
+  },
+  "unfinished_sample": [
+    {
+      "seed": "26",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 61,
+      "invalid_actions": 0,
+      "rooms_visited": 14,
+      "rooms_total": 16,
+      "attacks": 8,
+      "damage_taken": 10,
+      "potions_used": 0
+    },
+    {
+      "seed": "29",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 59,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 8,
+      "damage_taken": 10,
+      "potions_used": 0
+    },
+    {
+      "seed": "33",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 60,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 9,
+      "damage_taken": 14,
+      "potions_used": 1
+    },
+    {
+      "seed": "58",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 62,
+      "invalid_actions": 0,
+      "rooms_visited": 15,
+      "rooms_total": 16,
+      "attacks": 6,
+      "damage_taken": 8,
+      "potions_used": 0
+    },
+    {
+      "seed": "138",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 62,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 8,
+      "damage_taken": 10,
+      "potions_used": 0
+    },
+    {
+      "seed": "147",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 62,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 9,
+      "damage_taken": 14,
+      "potions_used": 1
+    },
+    {
+      "seed": "174",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 64,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 8,
+      "damage_taken": 10,
+      "potions_used": 0
+    },
+    {
+      "seed": "231",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 61,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 9,
+      "damage_taken": 14,
+      "potions_used": 1
+    },
+    {
+      "seed": "258",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 63,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 7,
+      "damage_taken": 8,
+      "potions_used": 0
+    },
+    {
+      "seed": "261",
+      "turns": 120,
+      "terminal_reason": "turn_limit",
+      "quests_completed": 2,
+      "quests_total": 3,
+      "moves": 63,
+      "invalid_actions": 0,
+      "rooms_visited": 16,
+      "rooms_total": 16,
+      "attacks": 7,
+      "damage_taken": 8,
+      "potions_used": 0
+    }
+  ],
+  "seconds": 11.76
+}
