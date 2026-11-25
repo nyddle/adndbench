@@ -1,0 +1,136 @@
+{
+  "note": "Dev-seed shortcut audit; public seeds, no model calls. Low heuristic accuracy does not prove absence of other shortcuts.",
+  "memory_updates": {
+    "easy": {
+      "episodes": 200,
+      "expected_random_accuracy": 0.1667,
+      "first_main_value": {
+        "correct": 0,
+        "accuracy": 0.0
+      },
+      "last_mentioned_item": {
+        "correct": 37,
+        "accuracy": 0.185
+      },
+      "most_frequent_item": {
+        "correct": 39,
+        "accuracy": 0.195
+      }
+    },
+    "medium": {
+      "episodes": 200,
+      "expected_random_accuracy": 0.1667,
+      "first_main_value": {
+        "correct": 0,
+        "accuracy": 0.0
+      },
+      "last_mentioned_item": {
+        "correct": 24,
+        "accuracy": 0.12
+      },
+      "most_frequent_item": {
+        "correct": 41,
+        "accuracy": 0.205
+      }
+    },
+    "hard": {
+      "episodes": 200,
+      "expected_random_accuracy": 0.1667,
+      "first_main_value": {
+        "correct": 0,
+        "accuracy": 0.0
+      },
+      "last_mentioned_item": {
+        "correct": 24,
+        "accuracy": 0.12
+      },
+      "most_frequent_item": {
+        "correct": 50,
+        "accuracy": 0.25
+      }
+    }
+  },
+  "route_probes": {
+    "classic": {
+      "seeds": 200,
+      "min_exits_1": {
+        "probes": 597,
+        "expected_random_accuracy": 0.5463,
+        "first_listed_exit": {
+          "correct": 310,
+          "accuracy": 0.5193
+        },
+        "last_move_direction": {
+          "correct": 115,
+          "accuracy": 0.1926
+        }
+      },
+      "min_exits_3": {
+        "probes": 482,
+        "expected_random_accuracy": 0.3271,
+        "first_listed_exit": {
+          "correct": 161,
+          "accuracy": 0.334
+        },
+        "last_move_direction": {
+          "correct": 110,
+          "accuracy": 0.2282
+        }
+      }
+    },
+    "realms": {
+      "seeds": 200,
+      "min_exits_1": {
+        "probes": 600,
+        "expected_random_accuracy": 0.5116,
+        "first_listed_exit": {
+          "correct": 273,
+          "accuracy": 0.455
+        },
+        "last_move_direction": {
+          "correct": 7,
+          "accuracy": 0.0117
+        }
+      },
+      "min_exits_3": {
+        "probes": 600,
+        "expected_random_accuracy": 0.3137,
+        "first_listed_exit": {
+          "correct": 215,
+          "accuracy": 0.3583
+        },
+        "last_move_direction": {
+          "correct": 88,
+          "accuracy": 0.1467
+        }
+      }
+    },
+    "expedition": {
+      "seeds": 100,
+      "min_exits_1": {
+        "probes": 300,
+        "expected_random_accuracy": 0.5026,
+        "first_listed_exit": {
+          "correct": 135,
+          "accuracy": 0.45
+        },
+        "last_move_direction": {
+          "correct": 9,
+          "accuracy": 0.03
+        }
+      },
+      "min_exits_3": {
+        "probes": 300,
+        "expected_random_accuracy": 0.3142,
+        "first_listed_exit": {
+          "correct": 116,
+          "accuracy": 0.3867
+        },
+        "last_move_direction": {
+          "correct": 43,
+          "accuracy": 0.1433
+        }
+      }
+    }
+  }
+}
