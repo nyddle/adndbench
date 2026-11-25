@@ -1,0 +1,397 @@
+{
+  "note": "Dev-seed rule-based references for caravan-0.2.0; no model calls. Low heuristic scores do not prove the absence of other shortcuts.",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "random_opportunist": {
+    "per_seed": [
+      {
+        "seed": 1,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 19,
+        "invalid_actions": 0,
+        "turns": 274,
+        "max_turns": 274
+      },
+      {
+        "seed": 2,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 1,
+        "rooms_visited": 26,
+        "invalid_actions": 0,
+        "turns": 310,
+        "max_turns": 310
+      },
+      {
+        "seed": 3,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 36,
+        "invalid_actions": 0,
+        "turns": 306,
+        "max_turns": 306
+      },
+      {
+        "seed": 4,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 45,
+        "invalid_actions": 0,
+        "turns": 306,
+        "max_turns": 306
+      },
+      {
+        "seed": 5,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 35,
+        "invalid_actions": 0,
+        "turns": 362,
+        "max_turns": 362
+      },
+      {
+        "seed": 6,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 39,
+        "invalid_actions": 0,
+        "turns": 314,
+        "max_turns": 314
+      },
+      {
+        "seed": 7,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 30,
+        "invalid_actions": 0,
+        "turns": 322,
+        "max_turns": 322
+      },
+      {
+        "seed": 8,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 1,
+        "rooms_visited": 29,
+        "invalid_actions": 0,
+        "turns": 300,
+        "max_turns": 300
+      },
+      {
+        "seed": 9,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 37,
+        "invalid_actions": 0,
+        "turns": 334,
+        "max_turns": 334
+      },
+      {
+        "seed": 10,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 25,
+        "invalid_actions": 0,
+        "turns": 274,
+        "max_turns": 274
+      },
+      {
+        "seed": 11,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 13,
+        "invalid_actions": 0,
+        "turns": 286,
+        "max_turns": 286
+      },
+      {
+        "seed": 12,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 41,
+        "invalid_actions": 0,
+        "turns": 302,
+        "max_turns": 302
+      },
+      {
+        "seed": 13,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 1,
+        "rooms_visited": 37,
+        "invalid_actions": 0,
+        "turns": 292,
+        "max_turns": 292
+      },
+      {
+        "seed": 14,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 38,
+        "invalid_actions": 0,
+        "turns": 292,
+        "max_turns": 292
+      },
+      {
+        "seed": 15,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 28,
+        "invalid_actions": 0,
+        "turns": 308,
+        "max_turns": 308
+      },
+      {
+        "seed": 16,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 27,
+        "invalid_actions": 0,
+        "turns": 274,
+        "max_turns": 274
+      },
+      {
+        "seed": 17,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 1,
+        "rooms_visited": 39,
+        "invalid_actions": 0,
+        "turns": 282,
+        "max_turns": 282
+      },
+      {
+        "seed": 18,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 23,
+        "invalid_actions": 0,
+        "turns": 318,
+        "max_turns": 318
+      },
+      {
+        "seed": 19,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 38,
+        "invalid_actions": 0,
+        "turns": 332,
+        "max_turns": 332
+      },
+      {
+        "seed": 20,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 0,
+        "rooms_visited": 39,
+        "invalid_actions": 0,
+        "turns": 282,
+        "max_turns": 282
+      }
+    ],
+    "quests_completed_mean": 0.2,
+    "completed_seeds": 0
+  },
+  "baseline_agent": {
+    "per_seed": [
+      {
+        "seed": 1,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 49,
+        "invalid_actions": 0,
+        "turns": 274,
+        "max_turns": 274
+      },
+      {
+        "seed": 2,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 43,
+        "invalid_actions": 0,
+        "turns": 310,
+        "max_turns": 310
+      },
+      {
+        "seed": 3,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 43,
+        "invalid_actions": 0,
+        "turns": 306,
+        "max_turns": 306
+      },
+      {
+        "seed": 4,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 2,
+        "rooms_visited": 40,
+        "invalid_actions": 0,
+        "turns": 306,
+        "max_turns": 306
+      },
+      {
+        "seed": 5,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 3,
+        "rooms_visited": 50,
+        "invalid_actions": 0,
+        "turns": 362,
+        "max_turns": 362
+      },
+      {
+        "seed": 6,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 43,
+        "invalid_actions": 0,
+        "turns": 314,
+        "max_turns": 314
+      },
+      {
+        "seed": 7,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 5,
+        "rooms_visited": 43,
+        "invalid_actions": 0,
+        "turns": 322,
+        "max_turns": 322
+      },
+      {
+        "seed": 8,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 40,
+        "invalid_actions": 0,
+        "turns": 300,
+        "max_turns": 300
+      },
+      {
+        "seed": 9,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 7,
+        "rooms_visited": 42,
+        "invalid_actions": 0,
+        "turns": 334,
+        "max_turns": 334
+      },
+      {
+        "seed": 10,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 3,
+        "rooms_visited": 44,
+        "invalid_actions": 0,
+        "turns": 274,
+        "max_turns": 274
+      },
+      {
+        "seed": 11,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 43,
+        "invalid_actions": 0,
+        "turns": 286,
+        "max_turns": 286
+      },
+      {
+        "seed": 12,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 48,
+        "invalid_actions": 0,
+        "turns": 302,
+        "max_turns": 302
+      },
+      {
+        "seed": 13,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 43,
+        "invalid_actions": 0,
+        "turns": 292,
+        "max_turns": 292
+      },
+      {
+        "seed": 14,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 5,
+        "rooms_visited": 52,
+        "invalid_actions": 0,
+        "turns": 292,
+        "max_turns": 292
+      },
+      {
+        "seed": 15,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 48,
+        "invalid_actions": 0,
+        "turns": 308,
+        "max_turns": 308
+      },
+      {
+        "seed": 16,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 2,
+        "rooms_visited": 45,
+        "invalid_actions": 0,
+        "turns": 274,
+        "max_turns": 274
+      },
+      {
+        "seed": 17,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 2,
+        "rooms_visited": 28,
+        "invalid_actions": 0,
+        "turns": 282,
+        "max_turns": 282
+      },
+      {
+        "seed": 18,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 52,
+        "invalid_actions": 0,
+        "turns": 318,
+        "max_turns": 318
+      },
+      {
+        "seed": 19,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 48,
+        "invalid_actions": 0,
+        "turns": 332,
+        "max_turns": 332
+      },
+      {
+        "seed": 20,
+        "terminal_reason": "turn_limit",
+        "quests_completed": 4,
+        "rooms_visited": 48,
+        "invalid_actions": 0,
+        "turns": 282,
+        "max_turns": 282
+      }
+    ],
+    "quests_completed_mean": 3.85,
+    "completed_seeds": 0
+  }
+}

@@ -87,7 +87,7 @@ python -m benchmark.runner --scenario expedition --agent baseline --seeds 1 2 3 
 
 Детерминизм среды не гарантирует детерминизма ответа внешнего API даже при `temperature=0`. Для честного сравнения фиксируйте набор сидов, версию движка, модель и её версию, настройки генерации, размер контекста и лимит ходов; используйте одинаковые условия и несколько повторов. Не публикуйте сиды оценочного набора заранее, если планируете сравнивать модели на скрытых сценариях. Этот прототип ещё не прошёл калибровку и не является общепринятым тестом способностей. Записанные результаты содержат полную историю партии и эталоны ответов, поэтому храните их как данные оценки. [Калибровочный запуск](docs/calibration.md) поддерживает парные варианты, восстановление после сбоев и одинаковые фиксированные задачи; [результаты пилота](docs/calibration-pilot.md) описывают ограничения и проверку сложности.
 
-Код: `benchmark/expedition.py` — сценарий с осями сложности, `benchmark/difficulty/` — независимые подсистемы, `benchmark/engine.py` — классическая среда, `benchmark/realms.py` — многозонный мир, `benchmark/realms_baseline.py` — наблюдающий агент для него, `benchmark/runner.py` — запуск и API-адаптер, `benchmark/probes.py` — контрольные вопросы, `benchmark/scoring.py` — метрики.
+Код: `benchmark/expedition.py` — сценарий с осями сложности, `benchmark/difficulty/` — независимые подсистемы, `benchmark/engine.py` — классическая среда, `benchmark/realms.py` — многозонный мир, `benchmark/realms_baseline.py` — наблюдающий агент для него, `benchmark/runner.py` — запуск и API-адаптер, `benchmark/probes.py` — контрольные вопросы, `benchmark/route_probes.py` — маршрутные вопросы по наблюдённому графу, `benchmark/mechanics_probes.py` — вопросы о правилах боя по наблюдённым событиям, `benchmark/memory_updates.py` — эпизод памяти с обновлением фактов, `benchmark/caravan.py` — город с множеством персонажей и сайд-квестов, `benchmark/scoring.py` — метрики.
 
 ## Отдельные исследовательские сценарии способностей
 
@@ -115,6 +115,11 @@ python -m benchmark.vector_play --axis navigation --level medium --seed dev-exam
 
 [Память и ориентирование](docs/memory-navigation-episodes.md) ·
 [Цепочки квестов](docs/quest-chains.md)
+
+Отдельные экспериментальные дополнения, не подключённые к runner и не
+откалиброванные на моделях: [память с обновлением фактов](docs/memory-updates.md),
+[маршрутные пробы по наблюдённому графу](docs/route-probes.md)
+и [караванный город с сайд-квестами](docs/caravan.md).
 
 Для совместного приключения используйте `adventure-memory`,
 `adventure-navigation` или `adventure-quests`: выбранный уровень меняет только
