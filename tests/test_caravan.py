@@ -66,9 +66,19 @@ class OracleAgent:
                         return
             elif game.position != target:
                 for direction in self._path(target):
+                    if obs is not None and obs['hp'] <= 6 and obs['potions'] \
+                            and not obs.get('enemy'):
+                        obs = self._step({'type': 'potion'})
+                        if obs is None:
+                            return
                     obs = self._step({'type': 'move', 'direction': direction})
                     if obs is None:
                         return
+                    if obs['hp'] <= 6 and obs['potions']:
+                        # Живой страж на выходе стоит 2 HP; лечимся до перехода.
+                        obs = self._step({'type': 'potion'})
+                        if obs is None:
+                            return
             while obs and obs.get('enemy'):
                 if obs['hp'] <= 6 and obs['potions']:
                     obs = self._step({'type': 'potion'})
